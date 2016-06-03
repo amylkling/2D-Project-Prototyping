@@ -4,7 +4,7 @@ using UnityStandardAssets.CrossPlatformInput;
 
 public class eHeroController : MonoBehaviour
 {
-
+	#region Variables
 	[SerializeField] private float maxHorzSpeed = 10f;		//maximum player speed - horizontal axis
 	[SerializeField] private float maxVertSpeed = 5f;		//maximum player speed - vertical axis
 	[SerializeField] private float maxDiagSpeed = 8f;		//maximum player speed - diagonal
@@ -25,7 +25,13 @@ public class eHeroController : MonoBehaviour
 	CursorLockMode desiredState;							//for cursor control
 
 	public Vector2 playerVelocity;
+	public bool doCharge = false;
 
+	private bool isFire1Pressed = false;					//check that any "Fire1" key isn't held down
+	private bool isFire2Pressed = false;					//check that any "Fire2" key isn't held down
+	#endregion
+
+	#region Awake Function
 	private void Awake ()
 	{
 		//assign Rigidbody2D component
@@ -34,7 +40,9 @@ public class eHeroController : MonoBehaviour
 		desiredState = CursorLockMode.Confined;
 		playerVelocity = rgdBody2D.velocity;
 	}
+	#endregion
 
+	#region FixedUpdate Function
 	private void FixedUpdate ()
 	{
 		#region Movement Code Attempts
@@ -43,29 +51,38 @@ public class eHeroController : MonoBehaviour
 //		rgdBody2D.velocity = new Vector2(horiz*maxHorzSpeed, verti*maxVertSpeed);
 		#endregion
 
-		#region Keyboard Movement
-		//move the character based on player's keyboard input and a speed multiplier
-		if (!mouseInput) 
+		//move the character according to player input, unless doing a charge attack
+		//doing a charge attack takes control away from the player
+		if (!doCharge)
 		{
-			rgdBody2D.velocity = new Vector2 (horiz * maxHorzSpeed, verti * maxVertSpeed);
-			if (horizRaw != 0 && vertiRaw != 0) 
+			#region Keyboard Movement
+			//move the character based on player's keyboard input and a speed multiplier
+			if (!mouseInput)
 			{
-				//diagonal movement with a different speed multiplier
-				rgdBody2D.velocity = new Vector2 (horiz * maxDiagSpeed, verti * maxDiagSpeed);
+				rgdBody2D.velocity = new Vector2 (horiz * maxHorzSpeed, verti * maxVertSpeed);
+				if (horizRaw != 0 && vertiRaw != 0)
+				{
+					//diagonal movement with a different speed multiplier
+					rgdBody2D.velocity = new Vector2 (horiz * maxDiagSpeed, verti * maxDiagSpeed);
+				}
 			}
-		}
-		#endregion
-
-		#region Mouse Movement
-		//move the character based on player's mouse input and a speed multiplier
-		if (mouseInput)
-		{
-			#region Fail Mouse Movement
-			//rgdBody2D.MovePosition(new Vector2(Screen.width - (inpt.x + (deltaSpeed.x*Time.fixedDeltaTime)), Screen.height - (inpt.y + (deltaSpeed.y*Time.fixedDeltaTime))));
 			#endregion
-			rgdBody2D.MovePosition(Vector2.Lerp(transform.position,inpt,mouseSpeed));
+
+			#region Mouse Movement
+			//move the character based on player's mouse input and a speed multiplier
+			if (mouseInput)
+			{
+				#region Fail Mouse Movement
+				//rgdBody2D.MovePosition(new Vector2(Screen.width - (inpt.x + (deltaSpeed.x*Time.fixedDeltaTime)), Screen.height - (inpt.y + (deltaSpeed.y*Time.fixedDeltaTime))));
+				#endregion
+				rgdBody2D.MovePosition (Vector2.Lerp (transform.position, inpt, mouseSpeed));
+			}
+			#endregion
 		}
-		#endregion
+		else
+		{
+			Charge();
+		}
 
 		#region Facing Direction
 		// If the input is moving the player right and the player is facing left...
@@ -81,7 +98,9 @@ public class eHeroController : MonoBehaviour
 		#endregion
 
 	}
-	
+	#endregion
+
+	#region Update Function
 	// Update is called once per frame
 	void Update ()
 	{
@@ -103,10 +122,34 @@ public class eHeroController : MonoBehaviour
 		//inpt = new Vector2 (horiz,verti).normalized;
 		#endregion
 
-		//switch between keyboard and mouse input with left mouse click
-		if (Input.GetMouseButtonDown(0))
+		//switch between keyboard and mouse input with any key in the "Fire 1" axis
+		//but only do it once - ignore held down key
+		if (Input.GetAxis("Fire1") != 0)
 		{
-			mouseInput = !mouseInput;
+			if (isFire1Pressed == false)
+			{
+				mouseInput = !mouseInput;
+				isFire1Pressed = true;
+			}
+		}
+		else
+		{
+			isFire1Pressed = false;
+		}
+
+		//do a charge attack with any key in the "Fire 2" axis
+		//but only do it once - ignore held down key
+		if (Input.GetAxis("Fire2") != 0)
+		{
+			if (isFire2Pressed == false && doCharge == false)
+			{
+				doCharge = true;
+				isFire2Pressed = true;
+			}
+		}
+		else
+		{
+			isFire2Pressed = false;
 		}
 
 		//get mouse position and keep it within the screen
@@ -123,7 +166,9 @@ public class eHeroController : MonoBehaviour
 		}
 
 	}
+	#endregion
 
+	#region Flip Function
 	private void Flip ()
 	{
 		// Switch the way the player is labelled as facing.
@@ -134,7 +179,9 @@ public class eHeroController : MonoBehaviour
 		theScale.x *= -1;
 		transform.localScale = theScale;
 	}
+	#endregion
 
+	#region SetCursorState Function
 	// Apply requested cursor state
 	void SetCursorState ()
 	{
@@ -142,4 +189,12 @@ public class eHeroController : MonoBehaviour
 		// Hide cursor when locking
 		Cursor.visible = (CursorLockMode.Confined != desiredState);
 	}
+	#endregion
+
+	#region Charge Function
+	void Charge()
+	{
+		return;
+	}
+	#endregion
 }
