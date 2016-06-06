@@ -17,7 +17,7 @@ public class eHeroController : MonoBehaviour
 	float verti = 0f;										//holder for vertical axis input
 	float vertiRaw = 0f;									//holder for raw vertical axis input
 	//float mVerti = 0f;
-	public bool mouseInput = false;							//whether or not to use mouse input
+	public bool mouseInput = true;							//whether or not to use mouse input
 	private Vector2 inpt = new Vector2(0,0);				//holder for 2D mouse input vector
 	private Vector3 mousePos;								//holder for mouse position
 	public float mouseSpeed = .1f;							//mouse speed multiplier
@@ -25,10 +25,15 @@ public class eHeroController : MonoBehaviour
 	CursorLockMode desiredState;							//for cursor control
 
 	public Vector2 playerVelocity;
-	public bool doCharge = false;
+	public bool doCharge = false;							//whether or not charge attack has been initiated
+	public float chargeSpeed = 10f;
+	public float chargeThreshold = 15f;						//distance between mouse and player for a charge attack
+	private float distance = 0f;							//holder for calculated distance between mouse and player
+
+	public CameraFollowV3 cameraScript;
 
 	private bool isFire1Pressed = false;					//check that any "Fire1" key isn't held down
-	private bool isFire2Pressed = false;					//check that any "Fire2" key isn't held down
+//	private bool isFire2Pressed = false;					//check that any "Fire2" key isn't held down
 	#endregion
 
 	#region Awake Function
@@ -39,6 +44,7 @@ public class eHeroController : MonoBehaviour
 		//set CursorLockMode to Confined, so the mouse will stay in the game window
 		desiredState = CursorLockMode.Confined;
 		playerVelocity = rgdBody2D.velocity;
+		cameraScript = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraFollowV3>();
 	}
 	#endregion
 
@@ -137,27 +143,41 @@ public class eHeroController : MonoBehaviour
 			isFire1Pressed = false;
 		}
 
+		#region Charge Button
 		//do a charge attack with any key in the "Fire 2" axis
 		//but only do it once - ignore held down key
-		if (Input.GetAxis("Fire2") != 0)
-		{
-			if (isFire2Pressed == false && doCharge == false)
-			{
-				doCharge = true;
-				isFire2Pressed = true;
-			}
-		}
-		else
-		{
-			isFire2Pressed = false;
-		}
+//		if (Input.GetAxis("Fire2") != 0)
+//		{
+//			if (isFire2Pressed == false && doCharge == false)
+//			{
+//				doCharge = true;
+//				isFire2Pressed = true;
+//			}
+//		}
+//		else
+//		{
+//			isFire2Pressed = false;
+//		}
+		#endregion
 
 		//get mouse position and keep it within the screen
 		mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		inpt = new Vector2 (mousePos.x, mousePos.y);
 
+		//calculate the distance between player and mouse to determine when to do a charge attack
+		distance = Vector3.Distance(rgdBody2D.position,mousePos);
+		if (distance >= chargeThreshold)
+		{
+			doCharge = true;
+		}
+
+		#region Velocity DebugLog
 		//send velocity values to console
-		Debug.Log ("Velocity: " + rgdBody2D.velocity.x.ToString () + ", " + rgdBody2D.velocity.y.ToString ());
+//		Debug.Log ("Velocity: " + rgdBody2D.velocity.x.ToString () + ", " + rgdBody2D.velocity.y.ToString ());
+		#endregion
+
+		//send distance value to console
+		Debug.Log ("Distance: " + distance.ToString());
 
 		//quit game when escape is pressed
 		if (Input.GetKeyDown (KeyCode.Escape))
@@ -194,6 +214,7 @@ public class eHeroController : MonoBehaviour
 	#region Charge Function
 	void Charge()
 	{
+		Debug.Log("CHARGE!!");
 		return;
 	}
 	#endregion
