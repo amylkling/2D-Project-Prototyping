@@ -19,7 +19,7 @@ public class eHeroController : MonoBehaviour
 	//float mVerti = 0f;
 	public bool mouseInput = true;							//whether or not to use mouse input
 	private Vector2 inpt = new Vector2(0,0);				//holder for 2D mouse input vector
-	private Vector3 mousePos;								//holder for mouse position
+	public Vector3 mousePos;								//holder for mouse position
 	public float mouseSpeed = .1f;							//mouse speed multiplier
 
 	CursorLockMode desiredState;							//for cursor control
@@ -29,8 +29,6 @@ public class eHeroController : MonoBehaviour
 	public float chargeSpeed = 10f;
 	public float chargeThreshold = 15f;						//distance between mouse and player for a charge attack
 	private float distance = 0f;							//holder for calculated distance between mouse and player
-
-	public CameraFollowV3 cameraScript;
 
 	private bool isFire1Pressed = false;					//check that any "Fire1" key isn't held down
 //	private bool isFire2Pressed = false;					//check that any "Fire2" key isn't held down
@@ -44,7 +42,6 @@ public class eHeroController : MonoBehaviour
 		//set CursorLockMode to Confined, so the mouse will stay in the game window
 		desiredState = CursorLockMode.Confined;
 		playerVelocity = rgdBody2D.velocity;
-		cameraScript = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraFollowV3>();
 	}
 	#endregion
 
@@ -170,6 +167,10 @@ public class eHeroController : MonoBehaviour
 		{
 			doCharge = true;
 		}
+		else
+		{
+			doCharge = false;
+		}
 
 		#region Velocity DebugLog
 		//send velocity values to console
@@ -207,15 +208,15 @@ public class eHeroController : MonoBehaviour
 	{
 		Cursor.lockState = desiredState;
 		// Hide cursor when locking
-		Cursor.visible = (CursorLockMode.Confined != desiredState);
+		//Cursor.visible = (CursorLockMode.Confined != desiredState);
 	}
 	#endregion
 
 	#region Charge Function
 	void Charge()
 	{
+		rgdBody2D.MovePosition(Vector2.Lerp(rgdBody2D.position, inpt, chargeSpeed * Time.deltaTime));
 		Debug.Log("CHARGE!!");
-		return;
 	}
 	#endregion
 }
