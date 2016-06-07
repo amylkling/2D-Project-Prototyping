@@ -39,7 +39,7 @@ public class eHeroController : MonoBehaviour
 	private bool chargeStart = false;						//starts countdown timer when true
 	private bool coolTimerOn = false;						//prevents continuous charge attack use
 
-	private bool isFire1Pressed = false;					//check that any "Fire1" key isn't held down
+//	private bool isFire1Pressed = false;					//check that any "Fire1" key isn't held down
 //	private bool isFire2Pressed = false;					//check that any "Fire2" key isn't held down
 
 	public Vector3 mousePosRaw;								//holder for raw mouse input
@@ -77,15 +77,15 @@ public class eHeroController : MonoBehaviour
 		{
 			#region Keyboard Movement
 			//move the character based on player's keyboard input and a speed multiplier
-			if (!mouseInput)
-			{
-				rgdBody2D.velocity = new Vector2 (horiz * maxHorzSpeed, verti * maxVertSpeed);
-				if (horizRaw != 0 && vertiRaw != 0)
-				{
-					//diagonal movement with a different speed multiplier
-					rgdBody2D.velocity = new Vector2 (horiz * maxDiagSpeed, verti * maxDiagSpeed);
-				}
-			}
+//			if (!mouseInput)
+//			{
+//				rgdBody2D.velocity = new Vector2 (horiz * maxHorzSpeed, verti * maxVertSpeed);
+//				if (horizRaw != 0 && vertiRaw != 0)
+//				{
+//					//diagonal movement with a different speed multiplier
+//					rgdBody2D.velocity = new Vector2 (horiz * maxDiagSpeed, verti * maxDiagSpeed);
+//				}
+//			}
 			#endregion
 
 			#region Mouse Movement
@@ -101,7 +101,10 @@ public class eHeroController : MonoBehaviour
 		}
 		else
 		{
-			Charge();
+			if (mouseInput)
+			{
+				Charge();
+			}
 		}
 
 		#region Facing Direction
@@ -166,19 +169,14 @@ public class eHeroController : MonoBehaviour
 		//inpt = new Vector2 (horiz,verti).normalized;
 		#endregion
 
-		//switch between keyboard and mouse input with any key in the "Fire 1" axis
-		//but only do it once - ignore held down key
+		//only allow player movement when "Fire1" key is held down
 		if (Input.GetAxis("Fire1") != 0)
 		{
-			if (isFire1Pressed == false)
-			{
-				mouseInput = !mouseInput;
-				isFire1Pressed = true;
-			}
+			mouseInput = true;
 		}
 		else
 		{
-			isFire1Pressed = false;
+			mouseInput = false;
 		}
 
 		#region Charge Button
