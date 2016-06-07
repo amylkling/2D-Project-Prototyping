@@ -8,7 +8,9 @@ public class eCitizenController : MonoBehaviour {
 	private Rigidbody2D rgdb2D;					//the citizen's rigidbody2D component
 	public float walkSpeed = 3f;				//how fast the citizen should move
 	public Vector2 clickPos;					//the position of the mouse when the button was clicked
-	public bool isDeployPressed = false;			//prevent holding the button from doing anything
+	public bool isDeployPressed = false;		//prevent holding the button from doing anything
+	public bool isStopPressed = false;			//prevent holding the button from doing anything
+	public bool stop = false;
 
 	// Use this for initialization
 	void Awake () 
@@ -30,7 +32,7 @@ public class eCitizenController : MonoBehaviour {
 
 		//when the button is pressed, set the target position for the citizen's movement
 		//otherwise it should stay still
-		if (Input.GetAxis ("Deploy") == 1)
+		if (Input.GetAxis ("Deploy") != 0)
 		{
 			if (isDeployPressed == false)
 			{
@@ -43,14 +45,31 @@ public class eCitizenController : MonoBehaviour {
 			isDeployPressed = false;
 			clickPos.y = rgdb2D.position.y;
 		}
+
+		if (Input.GetAxis("Stop") != 0)
+		{
+			if (isStopPressed == false)
+			{
+				isStopPressed = true;
+				stop = !stop;
+			}
+		}
+		else
+		{
+			isStopPressed = false;
+		}
 	}
 
 	void FixedUpdate()
 	{
 		//move the citizen to the target position with the set walk speed
-		if (rgdb2D.position != clickPos)
+		if (rgdb2D.position != clickPos && !stop)
 		{
 			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, clickPos, walkSpeed * Time.deltaTime);
+		}
+		else
+		{
+			rgdb2D.position = rgdb2D.position;
 		}
 	}
 }
