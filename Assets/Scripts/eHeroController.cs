@@ -24,20 +24,20 @@ public class eHeroController : MonoBehaviour
 
 	CursorLockMode desiredState;							//for cursor control
 
-	public bool doCharge = false;							//whether or not charge attack has been initiated
-	public float chargeSpeed = 10f;							//how fast the charge attack moves
-	public int chargeThreshold = 10;						//distance between mouse and screen for a charge attack
-	private float screenRight = 0f;							//calculated distance from screen edge for charge attack
-	private float screenTop = 0f;							//calculated distance from screen edge for charge attack
-	private float screenLB = 0f;							//calculated distance from screen edge for charge attack
+	public bool doDash = false;							//whether or not dash attack has been initiated
+	public float dashSpeed = 10f;							//how fast the dash attack moves
+	public int dashThreshold = 10;						//distance between mouse and screen for a dash attack
+	private float screenRight = 0f;							//calculated distance from screen edge for dash attack
+	private float screenTop = 0f;							//calculated distance from screen edge for dash attack
+	private float screenLB = 0f;							//calculated distance from screen edge for dash attack
 //	private float distance = 0f;							//holder for calculated distance between mouse and player
 
-	private float chargeCountDown = 0f;						//holder for charge attack duration timer
-	private float chargeCoolTimer = 0f;						//holder for charge cooldown timer
-	public float chargeCoolDown = 3f;						//how long the charge attack cooldown is
-	public float chargeDuration = 5f;						//how long the charge attack lasts
-	private bool chargeStart = false;						//starts countdown timer when true
-	private bool coolTimerOn = false;						//prevents continuous charge attack use
+	private float dashCountDown = 0f;						//holder for dash attack duration timer
+	private float dashCoolTimer = 0f;						//holder for dash cooldown timer
+	public float dashCoolDown = .25f;						//how long the dash attack cooldown is
+	public float dashDuration = 3.25f;						//how long the dash attack lasts
+	private bool dashStart = false;						//starts countdown timer when true
+	private bool coolTimerOn = false;						//prevents continuous dash attack use
 
 //	private bool isFire1Pressed = false;					//check that any "Fire1" key isn't held down
 //	private bool isFire2Pressed = false;					//check that any "Fire2" key isn't held down
@@ -52,13 +52,13 @@ public class eHeroController : MonoBehaviour
 		rgdBody2D = GetComponent<Rigidbody2D> ();
 		//set CursorLockMode to Confined, so the mouse will stay in the game window
 		desiredState = CursorLockMode.Confined;
-		//calculate the distance from the screen that the mouse needs to be to initiate a charge attack
-		screenRight = Screen.width * 0.95f - chargeThreshold;
-		screenTop = Screen.height * 0.95f - chargeThreshold;
-		screenLB += chargeThreshold;
+		//calculate the distance from the screen that the mouse needs to be to initiate a dash attack
+		screenRight = Screen.width * 0.95f - dashThreshold;
+		screenTop = Screen.height * 0.95f - dashThreshold;
+		screenLB += dashThreshold;
 		//set timers
-		chargeCountDown = chargeDuration;
-		chargeCoolTimer = chargeCoolDown;
+		dashCountDown = dashDuration;
+		dashCoolTimer = dashCoolDown;
 	}
 	#endregion
 
@@ -71,9 +71,9 @@ public class eHeroController : MonoBehaviour
 //		rgdBody2D.velocity = new Vector2(horiz*maxHorzSpeed, verti*maxVertSpeed);
 		#endregion
 
-		//move the character according to player input, unless doing a charge attack
-		//doing a charge attack takes control away from the player
-		if (!doCharge)
+		//move the character according to player input, unless doing a dash attack
+		//doing a dash attack takes control away from the player
+		if (!doDash)
 		{
 			#region Keyboard Movement
 			//move the character based on player's keyboard input and a speed multiplier
@@ -103,7 +103,7 @@ public class eHeroController : MonoBehaviour
 		{
 			if (mouseInput)
 			{
-				Charge();
+				Dash();
 			}
 		}
 
@@ -130,26 +130,26 @@ public class eHeroController : MonoBehaviour
 		//call the function to control the cursor
 		SetCursorState ();
 
-		//timer for charge attack duration
-		if (chargeStart)
+		//timer for dash attack duration
+		if (dashStart)
 		{
-			chargeCountDown -= Time.deltaTime;
-			if (chargeCountDown < 0)
+			dashCountDown -= Time.deltaTime;
+			if (dashCountDown < 0)
 			{
-				chargeCountDown = chargeDuration;
-				chargeStart = false;
-				doCharge = false;
+				dashCountDown = dashDuration;
+				dashStart = false;
+				doDash = false;
 				coolTimerOn = true;
 			}
 		}
 
-		//timer for charge attack cooldown
+		//timer for dash attack cooldown
 		if (coolTimerOn)
 		{
-			chargeCoolTimer -= Time.deltaTime;
-			if (chargeCoolTimer < 0)
+			dashCoolTimer -= Time.deltaTime; 
+			if (dashCoolTimer < 0)
 			{
-				chargeCoolTimer = chargeCoolDown;
+				dashCoolTimer = dashCoolDown;
 				coolTimerOn = false;
 			}
 		}
@@ -179,14 +179,14 @@ public class eHeroController : MonoBehaviour
 			mouseInput = false;
 		}
 
-		#region Charge Button
-		//do a charge attack with any key in the "Fire 2" axis
+		#region Dash Button
+		//do a dash attack with any key in the "Fire 2" axis
 		//but only do it once - ignore held down key
 //		if (Input.GetAxis("Fire2") != 0)
 //		{
-//			if (isFire2Pressed == false && doCharge == false)
+//			if (isFire2Pressed == false && doDash == false)
 //			{
-//				doCharge = true;
+//				doDash = true;
 //				isFire2Pressed = true;
 //			}
 //		}
@@ -202,12 +202,12 @@ public class eHeroController : MonoBehaviour
 		mousePos = Camera.main.ScreenToWorldPoint(mousePosRaw);
 		inpt = new Vector2 (mousePos.x, mousePos.y);
 
-		//calculate the distance between mouse and edge of screen to determine when to do a charge attack
+		//calculate the distance between mouse and edge of screen to determine when to do a dash attack
 //		distance = screenRight;
 		if ((mousePosRaw.x >= screenRight || mousePosRaw.y >= screenTop || mousePosRaw.x <= screenLB || mousePosRaw.y <= screenLB) && !coolTimerOn)
 		{
-			chargeStart = true;
-			doCharge = true;
+			dashStart = true;
+			doDash = true;
 		}
 
 		#region Velocity DebugLog
@@ -250,10 +250,10 @@ public class eHeroController : MonoBehaviour
 	}
 	#endregion
 
-	#region Charge Function
-	void Charge()
+	#region Dash Function
+	void Dash()
 	{
-		rgdBody2D.MovePosition(Vector2.Lerp(rgdBody2D.position, inpt, chargeSpeed * Time.deltaTime));
+		rgdBody2D.MovePosition(Vector2.Lerp(rgdBody2D.position, inpt, dashSpeed * Time.deltaTime));
 		Debug.Log("CHARGE!!");
 	}
 	#endregion

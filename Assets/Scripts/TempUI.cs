@@ -6,7 +6,7 @@ public class TempUI : MonoBehaviour {
 
 	public eHeroController player;
 	public Text normalSpeed;
-	public Text chargeSpeed;
+	public Text dashSpeed;
 	public float mouseSpeed;
 	public float chaSpeed;
 
@@ -14,15 +14,15 @@ public class TempUI : MonoBehaviour {
 	void Start () {
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<eHeroController>();
 		mouseSpeed = player.mouseSpeed;
-		chaSpeed = player.chargeSpeed;
+		chaSpeed = player.dashSpeed;
 		normalSpeed.text = "Normal Speed " + mouseSpeed.ToString("F");
-		chargeSpeed.text = "Charge Speed " + chaSpeed.ToString("F");
+		dashSpeed.text = "Dash Speed " + chaSpeed.ToString("F");
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		mouseSpeed = player.mouseSpeed;
-		chaSpeed = player.chargeSpeed;
+		chaSpeed = player.dashSpeed;
 
 		if (Input.GetKeyDown(KeyCode.I))
 		{
@@ -39,16 +39,16 @@ public class TempUI : MonoBehaviour {
 		if (Input.GetKeyDown(KeyCode.J))
 		{
 			chaSpeed += .1f;
-			player.chargeSpeed = chaSpeed;
+			player.dashSpeed = chaSpeed;
 		}
 
 		if (Input.GetKeyDown(KeyCode.L))
 		{
 			chaSpeed -= .1f;
-			player.chargeSpeed = chaSpeed;
+			player.dashSpeed = chaSpeed;
 		}
 			
 		normalSpeed.text = "Normal Speed " + mouseSpeed.ToString("F");
-		chargeSpeed.text = "Charge Speed " + chaSpeed.ToString("F");
+		dashSpeed.text = "Dash Speed " + chaSpeed.ToString("F");
 	}
 }
