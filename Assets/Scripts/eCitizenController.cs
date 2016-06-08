@@ -10,7 +10,10 @@ public class eCitizenController : MonoBehaviour {
 	public Vector2 clickPos;					//the position of the mouse when the button was clicked
 	public bool isDeployPressed = false;		//prevent holding the button from doing anything
 	public bool isStopPressed = false;			//prevent holding the button from doing anything
-	public bool stop = false;
+	public bool stop = false;					//whether or not the citizen moves
+	public GameObject marker;					//reference the marker prefab
+	public Vector3 markerPos;
+	private GameObject[] mars;
 
 	// Use this for initialization
 	void Awake () 
@@ -37,6 +40,19 @@ public class eCitizenController : MonoBehaviour {
 			if (isDeployPressed == false)
 			{
 				clickPos = new Vector2(mousePos.x, rgdb2D.position.y);
+				markerPos = new Vector3(clickPos.x, clickPos.y - 0.5f, 0);
+
+				mars = GameObject.FindGameObjectsWithTag("Marker");
+				if (mars.Length == 0)
+				{
+					Instantiate(marker, markerPos, Quaternion.identity);
+				}
+				else if (mars.Length == 1)
+				{
+					Destroy(GameObject.FindGameObjectWithTag("Marker"));
+					Instantiate(marker, markerPos, Quaternion.identity);
+				}
+
 				isDeployPressed = true;
 			}
 		}
