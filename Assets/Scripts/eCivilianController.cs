@@ -1,16 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class eCitizenController : MonoBehaviour {
+public class eCivilianController : MonoBehaviour {
 
 	public eHeroController player;				//reference the player's script
 	public Vector3 mousePos;					//holder for mouse input from player's script
-	private Rigidbody2D rgdb2D;					//the citizen's rigidbody2D component
-	public float walkSpeed = 3f;				//how fast the citizen should move
+	private Rigidbody2D rgdb2D;					//the civilian's rigidbody2D component
+	public float walkSpeed = 3f;				//how fast the civilian should move
 	public Vector2 clickPos;					//the position of the mouse when the button was clicked
 	public bool isDeployPressed = false;		//prevent holding the button from doing anything
 	public bool isStopPressed = false;			//prevent holding the button from doing anything
-	public bool stop = false;					//whether or not the citizen moves
+	public bool stop = false;					//whether or not the civilian moves
 	public GameObject marker;					//reference the marker prefab
 	public Vector3 markerPos;
 	private GameObject[] mars;
@@ -23,7 +23,7 @@ public class eCitizenController : MonoBehaviour {
 		mousePos = player.mousePos;
 		//initiate rigidbody2d component
 		rgdb2D = GetComponent<Rigidbody2D>();
-		//initiate the citizen's target position to its current position
+		//initiate the civilian's target position to its current position
 		clickPos = rgdb2D.position;
 	}
 	
@@ -33,7 +33,7 @@ public class eCitizenController : MonoBehaviour {
 		//keep the mouse input updated
 		mousePos = player.mousePos;
 
-		//when the button is pressed, set the target position for the citizen's movement
+		//when the button is pressed, set the target position for the civilian's movement
 		//otherwise it should stay still
 		if (Input.GetAxis ("Deploy") != 0)
 		{
@@ -78,7 +78,7 @@ public class eCitizenController : MonoBehaviour {
 
 	void FixedUpdate()
 	{
-		//move the citizen to the target position with the set walk speed
+		//move the civilian to the target position with the set walk speed
 		if (rgdb2D.position != clickPos && !stop)
 		{
 			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, clickPos, walkSpeed * Time.deltaTime);
