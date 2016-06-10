@@ -251,10 +251,23 @@ public class eHeroController : MonoBehaviour
 	#endregion
 
 	#region Dash Function
+	//cause the player to move faster
 	void Dash()
 	{
 		rgdBody2D.MovePosition(Vector2.Lerp(rgdBody2D.position, inpt, dashSpeed * Time.deltaTime));
 		Debug.Log("CHARGE!!");
+	}
+	#endregion
+
+	#region On Collision Enter 2D Function
+	//stop colliding with civs
+	void OnCollisionEnter2D(Collision2D col)
+	{
+		if (col.gameObject.CompareTag("Civilian"))
+		{
+			Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), 
+									col.gameObject.GetComponent<Collider2D>());
+		}
 	}
 	#endregion
 }
