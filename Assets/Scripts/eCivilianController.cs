@@ -14,6 +14,14 @@ public class eCivilianController : MonoBehaviour {
 	public GameObject marker;					//reference the marker prefab
 	public Vector3 markerPos;
 	private GameObject[] mars;
+	public bool isSelected = false;
+	public bool isSelectPressed = false;
+	private Vector2 mousePos2D;
+	public bool markerDeployed = false;
+
+	public bool selectAll = false;
+	private float pressTime;
+	public float pressTimeLimit = .10f;
 
 	// Use this for initialization
 	void Awake () 
@@ -25,6 +33,7 @@ public class eCivilianController : MonoBehaviour {
 		rgdb2D = GetComponent<Rigidbody2D>();
 		//initiate the civilian's target position to its current position
 		clickPos = rgdb2D.position;
+		pressTime = Time.time;
 	}
 	
 	// Update is called once per frame
@@ -33,16 +42,19 @@ public class eCivilianController : MonoBehaviour {
 		//keep the mouse input updated
 		mousePos = player.mousePos;
 
-		//when the button is pressed, set the target position for the civilian's movement
-		//otherwise it should stay still
+		//keep track of how many markers are in the scene
+		mars = GameObject.FindGameObjectsWithTag("Marker");
+
+		//controls for civilian movement
 		if (Input.GetAxis ("Deploy") != 0)
 		{
-			if (isDeployPressed == false)
+			if (isDeployPressed == false && isSelected)
 			{
+				//when the button is pressed, set the civ's target position
 				clickPos = new Vector2(mousePos.x, rgdb2D.position.y);
 				markerPos = new Vector3(clickPos.x, clickPos.y - 0.5f, 0);
 
-				mars = GameObject.FindGameObjectsWithTag("Marker");
+				//place a marker if there isn't one already or replace the current one
 				if (mars.Length == 0)
 				{
 					Instantiate(marker, markerPos, Quaternion.identity);
@@ -52,19 +64,22 @@ public class eCivilianController : MonoBehaviour {
 					Destroy(GameObject.FindGameObjectWithTag("Marker"));
 					Instantiate(marker, markerPos, Quaternion.identity);
 				}
-
+				markerDeployed = true;
 				isDeployPressed = true;
 			}
 		}
 		else
 		{
+			//when not pressed it should stay still
 			isDeployPressed = false;
 			clickPos.y = rgdb2D.position.y;
 		}
 
+		//controls for stopping the civilian
 		if (Input.GetAxis("Stop") != 0)
 		{
-			if (isStopPressed == false)
+			//when the button is pressed, the civilian stops or resumes movement
+			if (isStopPressed == false && isSelected)
 			{
 				isStopPressed = true;
 				stop = !stop;
@@ -74,11 +89,60 @@ public class eCivilianController : MonoBehaviour {
 		{
 			isStopPressed = false;
 		}
+
+		//controls for selecting civilians
+		//when held down and the mouse is dragged, creates a selection box that selects all civilians within
+		if (Input.GetAxis("Select") != 0)
+		{
+			if (isSelectPressed == false)
+			{
+				//when double tapped, all civilians are selected
+				if (Time.time - pressTime <= pressTimeLimit)
+				{
+					Debug.Log("Time: " + Time.time);
+					Debug.Log("Time Difference: " + (Time.time - pressTime));
+					isSelected = true;
+					pressTime = Time.time;
+				}
+				else
+				{
+					//when the button is pressed while mouse is hovering over the civilian, it is selected
+					//when pressed while mouse is not hovering over any civilian, the civilian is deselected
+					pressTime = Time.time; 
+					Debug.Log("Press Time: " + pressTime); 
+
+					mousePos2D = new Vector2 (mousePos.x, mousePos.y);
+
+					RaycastHit2D hit = Physics2D.Raycast (mousePos2D, Vector2.zero, 0f);
+
+					if (hit)
+					{
+						if (hit.transform.gameObject.Equals (gameObject))
+						{
+							isSelected = !isSelected;
+						}
+						else if (!hit.transform.gameObject.CompareTag ("Civilian"))
+						{
+							isSelected = false;
+						}
+					}
+					else
+					{
+						isSelected = false;
+					}
+				}
+				isSelectPressed = true;
+			}
+		}
+		else
+		{
+			isSelectPressed = false;
+		}
 	}
 
 	void FixedUpdate()
 	{
-		//move the civilian to the target position with the set walk speed
+		//move the civilian to the target position with the set walk speed or keep it still
 		if (rgdb2D.position != clickPos && !stop)
 		{
 			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, clickPos, walkSpeed * Time.deltaTime);
