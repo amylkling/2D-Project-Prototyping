@@ -12,16 +12,17 @@ public class eCivilianController : MonoBehaviour {
 	public bool isStopPressed = false;			//prevent holding the button from doing anything
 	public bool stop = false;					//whether or not the civilian moves
 	public GameObject marker;					//reference the marker prefab
-	public Vector3 markerPos;
-	private GameObject[] mars;
-	public bool isSelected = false;
-	public bool isSelectPressed = false;
-	private Vector2 mousePos2D;
-	public bool markerDeployed = false;
+	public Vector3 markerPos;					//holder for the marker's spawn position
+	private GameObject[] mars;					//holder for an array of markers in the scene
+	public bool isSelected = false;				//whether or not a civ can be considered "selected"
+	public bool isSelectPressed = false;		//prevent holding the button from doing anything
+	private Vector2 mousePos2D;					//holder for the conversion of the mouse position to 2D
 
-	public bool selectAll = false;
-	private float pressTime;
-	public float pressTimeLimit = .10f;
+	public bool selectAll = false;				//whether or not to select all civs, not just this one
+	private float pressTime;					//the time of the previous button press
+	public float pressTimeLimit = .10f;			//the amount of time between button presses for a double tap
+	private Rect boxSelect;						//holder for the invisible selection box
+	private Vector2 initMousePos;				//the position of the mouse when the selection box was created
 
 	// Use this for initialization
 	void Awake () 
@@ -64,7 +65,6 @@ public class eCivilianController : MonoBehaviour {
 					Destroy(GameObject.FindGameObjectWithTag("Marker"));
 					Instantiate(marker, markerPos, Quaternion.identity);
 				}
-				markerDeployed = true;
 				isDeployPressed = true;
 			}
 		}
@@ -90,8 +90,7 @@ public class eCivilianController : MonoBehaviour {
 			isStopPressed = false;
 		}
 
-		//controls for selecting civilians
-		//when held down and the mouse is dragged, creates a selection box that selects all civilians within
+		//controls for selecting civilians 
 		if (Input.GetAxis("Select") != 0)
 		{
 			if (isSelectPressed == false)
@@ -131,7 +130,23 @@ public class eCivilianController : MonoBehaviour {
 						isSelected = false;
 					}
 				}
+				//capture the mouse position in screen space when the button was first pressed
+				initMousePos = Camera.main.WorldToScreenPoint(mousePos);
+
 				isSelectPressed = true;
+			}
+			else
+			{
+				//when held down and the mouse is dragged, creates a selection box that selects all civilians within
+				boxSelect = new Rect(Mathf.Min(initMousePos.x, Camera.main.WorldToScreenPoint(mousePos).x), 
+									Mathf.Min(initMousePos.y, Camera.main.WorldToScreenPoint(mousePos).y), 
+									Mathf.Abs(initMousePos.x - Camera.main.WorldToScreenPoint(mousePos).x), 
+									Mathf.Abs(initMousePos.y - Camera.main.WorldToScreenPoint(mousePos).y));
+				
+				if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
+				{
+					isSelected = true;
+				}
 			}
 		}
 		else
