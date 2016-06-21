@@ -21,8 +21,8 @@ public class eCivilianController : MonoBehaviour {
 	public bool selectAll = false;				//whether or not to select all civs, not just this one
 	private float pressTime;					//the time of the previous button press
 	public float pressTimeLimit = .10f;			//the amount of time between button presses for a double tap
-	private Rect boxSelect;						//holder for the invisible selection box
-	private Vector2 initMousePos;				//the position of the mouse when the selection box was created
+	public Rect boxSelect;						//holder for the invisible selection box
+	public Vector2 initMousePos;				//the position of the mouse when the selection box was created
 
 	// Use this for initialization
 	void Awake () 
@@ -146,6 +146,10 @@ public class eCivilianController : MonoBehaviour {
 				if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
 				{
 					isSelected = true;
+				}
+				else
+				{
+					isSelected = false;
 				}
 			}
 		}
