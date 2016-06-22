@@ -3,6 +3,7 @@ using System.Collections;
 
 public class eCivilianController : MonoBehaviour {
 
+	#region Variables
 	public eHeroController player;				//reference the player's script
 	public Vector3 mousePos;					//holder for mouse input from player's script
 	private Rigidbody2D rgdb2D;					//the civilian's rigidbody2D component
@@ -24,6 +25,15 @@ public class eCivilianController : MonoBehaviour {
 	public Rect boxSelect;						//holder for the invisible selection box
 	public Vector2 initMousePos;				//the position of the mouse when the selection box was created
 
+	public int maxHealth = 100;					//the maximum health of the civilian
+	private int health = 100;					//the current health of the civilian
+	private bool Dead = false;					//whether or not the civilian is dead
+	private bool Dying = false;					//whether or not the civilian is in a dying state
+	private float dyingTimer = 0f;				//the countdown for when dying turns into dead
+	public float dyingTimeLimit = 30f;			//the amount of time it takes for dying to turn into dead
+	#endregion
+
+	#region Awake Function
 	// Use this for initialization
 	void Awake () 
 	{
@@ -35,8 +45,13 @@ public class eCivilianController : MonoBehaviour {
 		//initiate the civilian's target position to its current position
 		clickPos = rgdb2D.position;
 		pressTime = Time.time;
+		//initiate health
+		health = maxHealth;
+		dyingTimer = dyingTimeLimit;
 	}
-	
+	#endregion
+
+	#region Update Function
 	// Update is called once per frame
 	void Update () 
 	{
@@ -46,6 +61,7 @@ public class eCivilianController : MonoBehaviour {
 		//keep track of how many markers are in the scene
 		mars = GameObject.FindGameObjectsWithTag("Marker");
 
+		#region Marker Controls
 		//controls for civilian movement
 		if (Input.GetAxis ("Deploy") != 0)
 		{
@@ -74,7 +90,9 @@ public class eCivilianController : MonoBehaviour {
 			isDeployPressed = false;
 			clickPos.y = rgdb2D.position.y;
 		}
+		#endregion
 
+		#region Stopping Controls
 		//controls for stopping the civilian
 		if (Input.GetAxis("Stop") != 0)
 		{
@@ -89,12 +107,15 @@ public class eCivilianController : MonoBehaviour {
 		{
 			isStopPressed = false;
 		}
+		#endregion
 
+		#region Selection Controls
 		//controls for selecting civilians 
 		if (Input.GetAxis("Select") != 0)
 		{
 			if (isSelectPressed == false)
 			{
+				#region Select All
 				//when double tapped, all civilians are selected
 				if (Time.time - pressTime <= pressTimeLimit)
 				{
@@ -103,6 +124,8 @@ public class eCivilianController : MonoBehaviour {
 					isSelected = true;
 					pressTime = Time.time;
 				}
+				#endregion
+				#region Select One
 				else
 				{
 					//when the button is pressed while mouse is hovering over the civilian, it is selected
@@ -130,6 +153,7 @@ public class eCivilianController : MonoBehaviour {
 						isSelected = false;
 					}
 				}
+				#endregion
 				//capture the mouse position in screen space when the button was first pressed
 				initMousePos = Camera.main.WorldToScreenPoint(mousePos);
 
@@ -137,6 +161,7 @@ public class eCivilianController : MonoBehaviour {
 			}
 			else
 			{
+				#region Selection Box
 				//when held down and the mouse is dragged, creates a selection box that selects all civilians within
 				boxSelect = new Rect(Mathf.Min(initMousePos.x, Camera.main.WorldToScreenPoint(mousePos).x), 
 									Mathf.Min(initMousePos.y, Camera.main.WorldToScreenPoint(mousePos).y), 
@@ -151,18 +176,50 @@ public class eCivilianController : MonoBehaviour {
 				{
 					isSelected = false;
 				}
+				#endregion
 			}
 		}
 		else
 		{
 			isSelectPressed = false;
 		}
-	}
+		#endregion
 
+		#region Dying
+		if (Dying)
+		{
+			Debug.Log("I'm dying!!");
+			dyingTimer -= Time.deltaTime;
+			if (dyingTimer <= 0)
+			{
+				Death();
+				dyingTimer = dyingTimeLimit;
+				Dying = false;
+			}
+		}
+		#endregion
+
+		#region Dead
+		if (Dead)
+		{
+			Destroy(gameObject);
+		}
+		#endregion
+
+		#region Temp Damaging Controls
+		if (Input.GetKeyDown(KeyCode.D))
+		{
+			TakeDmg(34);
+		}
+		#endregion
+	}
+	#endregion
+
+	#region Fixed Update Function
 	void FixedUpdate()
 	{
 		//move the civilian to the target position with the set walk speed or keep it still
-		if (rgdb2D.position != clickPos && !stop)
+		if (rgdb2D.position != clickPos && !stop && !Dead && !Dying)
 		{
 			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, clickPos, walkSpeed * Time.deltaTime);
 		}
@@ -171,4 +228,30 @@ public class eCivilianController : MonoBehaviour {
 			rgdb2D.position = rgdb2D.position;
 		}
 	}
+	#endregion
+
+	#region Take Damage Function
+	public void TakeDmg(int amt)
+	{
+		health -= amt;
+		if (health <= 0 && !Dying && !Dead)
+		{
+			StartDying();
+		}
+	}
+	#endregion
+
+	#region Death Function
+	void Death()
+	{
+		Dead = true;
+	}
+	#endregion
+
+	#region Dying Function
+	void StartDying()
+	{
+		Dying = true;
+	}
+	#endregion
 }

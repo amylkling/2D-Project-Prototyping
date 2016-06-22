@@ -114,6 +114,10 @@ public class eHeroController : MonoBehaviour
 				coolTimerOn = true;
 			}
 		}
+		else
+		{
+			dashCountDown = dashDuration;
+		}
 		#endregion
 
 		#region Dash Cooldown Timer
@@ -159,6 +163,11 @@ public class eHeroController : MonoBehaviour
 		{
 			dashStart = true;
 			doDash = true;
+		}
+		else
+		{
+			dashStart = false;
+			doDash = false;
 		}
 		#endregion
 
