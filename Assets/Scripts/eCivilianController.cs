@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class eCivilianController : MonoBehaviour {
 
@@ -31,6 +32,9 @@ public class eCivilianController : MonoBehaviour {
 	private bool Dying = false;					//whether or not the civilian is in a dying state
 	private float dyingTimer = 0f;				//the countdown for when dying turns into dead
 	public float dyingTimeLimit = 30f;			//the amount of time it takes for dying to turn into dead
+	public Slider healthBar;					//the UI bar that shows the civilian's health
+	public CivHealthUI uiScript;				//reference the script that handles the UI functionality
+	public CivHealthUIController uiControl;		//reference the script that controls the UI's existence
 	#endregion
 
 	#region Awake Function
@@ -48,6 +52,10 @@ public class eCivilianController : MonoBehaviour {
 		//initiate health
 		health = maxHealth;
 		dyingTimer = dyingTimeLimit;
+		uiScript = gameObject.GetComponent<CivHealthUI>();
+		healthBar.value = health;
+		healthBar.maxValue = maxHealth;
+		uiControl = uiScript.uiScript;
 	}
 	#endregion
 
@@ -234,6 +242,7 @@ public class eCivilianController : MonoBehaviour {
 	public void TakeDmg(int amt)
 	{
 		health -= amt;
+		healthBar.value = health;
 		if (health <= 0 && !Dying && !Dead)
 		{
 			StartDying();
