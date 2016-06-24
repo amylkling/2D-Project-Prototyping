@@ -5,7 +5,10 @@ public class SteamVent : MonoBehaviour
 {
 
 	public float sprayTimer = 0.5f;
+	//public float sprayTimeLimit = 0.25f;
 	public bool[] sprayTimes = new bool[8];
+
+	public GameObject DamageTrigger;
 
 
 	private float actualTimer;
@@ -17,7 +20,6 @@ public class SteamVent : MonoBehaviour
 		actualTimer = sprayTimer;
 		sprayIndex = 0;
 		steam = GetComponent<ParticleSystem> ();
-		//steam.emission.rate = 0;
 	}
 
 	void Update()
@@ -28,8 +30,13 @@ public class SteamVent : MonoBehaviour
 		{
 			if (sprayTimes [sprayIndex] == true)
 			{
-				Debug.Log (actualTimer);
-				steam.Emit(10);
+				steam.Play ();
+				DamageTrigger.SetActive (true);
+			} 
+			else
+			{
+				steam.Stop ();
+				DamageTrigger.SetActive (false);
 			}
 			sprayIndex++;
 			if(sprayIndex > 7) 

@@ -12,6 +12,10 @@ public class FallingRock : MonoBehaviour
 			GameObject cam = GameObject.FindGameObjectWithTag ("MainCamera") as GameObject;
 			iTweenEvent.GetEvent (cam, "ScreenPunch").Play ();
 		}
+//		if (col.gameObject.tag == "Civilian")
+//		{
+//			col.gameObject.GetComponent<eCivilianController> ().TakeDmg (34f);
+//		}
 		Destroy(gameObject);
 	}
 }

@@ -26,7 +26,6 @@ public class RockDropper : MonoBehaviour
 		{
 			if (dropTimes [dropIndex] == true)
 			{
-				Debug.Log (actualTimer);
 				GameObject Rock = (GameObject)Instantiate (fallingRock, transform.position, transform.rotation);
 			}
 			dropIndex++;
