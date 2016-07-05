@@ -36,10 +36,10 @@ public class CivHealthUI : MonoBehaviour {
 		healthSlider = healthPanel.GetComponent<Slider>();
 		selfRenderer = gameObject.GetComponent<Renderer>();
 
-		barFill = healthPanel.GetComponentInChildren<Image>();
-
 		//let the Civilian script attached to the same civilian know which health bar belongs to it
 		civScript.healthBar = healthSlider;
+
+		barFill = healthPanel.GetComponentInChildren<Image>();
 
 		canvasGroup = healthPanel.GetComponent<CanvasGroup>();
 
@@ -70,10 +70,7 @@ public class CivHealthUI : MonoBehaviour {
 		{
 			healthPanel.SetActive(false);
 		}
-
-
-		Debug.Log("2/3: " + Mathf.CeilToInt(healthSlider.maxValue * (2f/3f)));
-		Debug.Log("1/3: " + Mathf.CeilToInt(healthSlider.maxValue * (1f/3f)));
+			
 
 
 		if (healthSlider.value <= Mathf.CeilToInt(healthSlider.maxValue * (2f/3f)) && 

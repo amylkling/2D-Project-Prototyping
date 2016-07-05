@@ -15,7 +15,7 @@ public class SteamVent : MonoBehaviour
 	private int sprayIndex;
 	private ParticleSystem steam;
 
-	void Start()
+	void Awake()
 	{
 		actualTimer = sprayTimer;
 		sprayIndex = 0;

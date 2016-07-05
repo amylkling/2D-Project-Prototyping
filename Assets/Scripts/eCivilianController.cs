@@ -25,6 +25,7 @@ public class eCivilianController : MonoBehaviour {
 	public float pressTimeLimit = .10f;			//the amount of time between button presses for a double tap
 	public Rect boxSelect;						//holder for the invisible selection box
 	public Vector2 initMousePos;				//the position of the mouse when the selection box was created
+	public bool noMarquee = false;				//determine whether or not to use marquee/box selection
 
 	public int maxHealth = 100;					//the maximum health of the civilian
 	private int health = 100;					//the current health of the civilian
@@ -33,8 +34,12 @@ public class eCivilianController : MonoBehaviour {
 	private float dyingTimer = 0f;				//the countdown for when dying turns into dead
 	public float dyingTimeLimit = 30f;			//the amount of time it takes for dying to turn into dead
 	public Slider healthBar;					//the UI bar that shows the civilian's health
-	public CivHealthUI uiScript;				//reference the script that handles the UI functionality
-	public CivHealthUIController uiControl;		//reference the script that controls the UI's existence
+
+	public bool invincibleTimerOn = false;		//start count down on how long invincibility lasts
+	private float invincibleTimer = 0f;			//countdown for how long invincibility lasts
+	public float invincibleTimeLimit = 5f;		//how long invincibility should last
+
+
 	#endregion
 
 	#region Awake Function
@@ -52,10 +57,9 @@ public class eCivilianController : MonoBehaviour {
 		//initiate health
 		health = maxHealth;
 		dyingTimer = dyingTimeLimit;
-		uiScript = gameObject.GetComponent<CivHealthUI>();
+		invincibleTimer = invincibleTimeLimit;
 		healthBar.value = health;
 		healthBar.maxValue = maxHealth;
-		uiControl = uiScript.uiScript;
 	}
 	#endregion
 
@@ -117,79 +121,186 @@ public class eCivilianController : MonoBehaviour {
 		}
 		#endregion
 
+		#region BAD Selection Controls
+//		//controls for selecting civilians 
+//		if (Input.GetAxis("Select") != 0)
+//		{
+//			if (isSelectPressed == false)
+//			{
+//				#region Select All
+//				//when double tapped, all civilians are selected
+//				if (Time.time - pressTime <= pressTimeLimit)
+//				{
+//					Debug.Log("Time: " + Time.time);
+//					Debug.Log("Time Difference: " + (Time.time - pressTime));
+//					isSelected = true;
+//					Debug.Log("isSelected: " + isSelected.ToString());
+//					pressTime = Time.time;
+//				}
+//				#endregion
+//				#region Select One
+//				else
+//				{
+//					//when the button is pressed while mouse is hovering over the civilian, it is selected
+//					//when pressed while mouse is not hovering over any civilian, the civilian is deselected
+//					pressTime = Time.time; 
+//					Debug.Log("Press Time: " + pressTime); 
+//
+//					mousePos2D = new Vector2 (mousePos.x, mousePos.y);
+//
+//					RaycastHit2D hit = Physics2D.Raycast (mousePos2D, Vector2.zero, 0f);
+//
+//					if (hit)
+//					{
+//						if (hit.transform.gameObject.Equals (gameObject))
+//						{
+//							isSelected = !isSelected;
+//						}
+//						else if (!hit.transform.gameObject.CompareTag ("Civilian"))
+//						{
+//							isSelected = false;
+//						}
+//					}
+//					else
+//					{
+//						isSelected = false;
+//					}
+//				}
+//				#endregion
+//				//capture the mouse position in screen space when the button was first pressed
+//				initMousePos = Camera.main.WorldToScreenPoint(mousePos);
+//
+//				isSelectPressed = true;
+//			}
+//			else
+//			{
+//				#region Selection Box
+//				//when held down and the mouse is dragged, creates a selection box that selects all civilians within
+//				boxSelect = new Rect(Mathf.Min(initMousePos.x, Camera.main.WorldToScreenPoint(mousePos).x), 
+//									Mathf.Min(initMousePos.y, Camera.main.WorldToScreenPoint(mousePos).y), 
+//									Mathf.Abs(initMousePos.x - Camera.main.WorldToScreenPoint(mousePos).x), 
+//									Mathf.Abs(initMousePos.y - Camera.main.WorldToScreenPoint(mousePos).y));
+//				
+//				if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
+//				{
+//					isSelected = true;
+//				}
+//				else
+//				{
+//					isSelected = false;
+//				}
+//				#endregion
+//			}
+//		}
+//		else
+//		{
+//			isSelectPressed = false;
+//		}
+		#endregion
+
 		#region Selection Controls
-		//controls for selecting civilians 
-		if (Input.GetAxis("Select") != 0)
+		if(Input.GetButtonDown("Select"))
 		{
-			if (isSelectPressed == false)
+			#region Select All
+			//when double tapped, all civilians are selected
+			if (Time.time - pressTime <= pressTimeLimit)
 			{
-				#region Select All
-				//when double tapped, all civilians are selected
-				if (Time.time - pressTime <= pressTimeLimit)
+				Debug.Log("Time: " + Time.time);
+				Debug.Log("Time Difference: " + (Time.time - pressTime));
+				isSelected = true;
+				Debug.Log("isSelected: " + isSelected.ToString());
+				pressTime = Time.time;
+
+				noMarquee = true;
+				Debug.Log("all");
+			}
+			#endregion
+			#region Select One
+			else
+			{
+				//when the button is pressed while mouse is hovering over the civilian, it is selected
+				//when pressed while mouse is not hovering over any civilian, the civilian is deselected
+				pressTime = Time.time; 
+				Debug.Log("Press Time: " + pressTime); 
+
+				mousePos2D = new Vector2 (mousePos.x, mousePos.y);
+
+				RaycastHit2D hit = Physics2D.Raycast (mousePos2D, Vector2.zero, 0f);
+
+				if (hit)
 				{
-					Debug.Log("Time: " + Time.time);
-					Debug.Log("Time Difference: " + (Time.time - pressTime));
-					isSelected = true;
-					pressTime = Time.time;
-				}
-				#endregion
-				#region Select One
-				else
-				{
-					//when the button is pressed while mouse is hovering over the civilian, it is selected
-					//when pressed while mouse is not hovering over any civilian, the civilian is deselected
-					pressTime = Time.time; 
-					Debug.Log("Press Time: " + pressTime); 
-
-					mousePos2D = new Vector2 (mousePos.x, mousePos.y);
-
-					RaycastHit2D hit = Physics2D.Raycast (mousePos2D, Vector2.zero, 0f);
-
-					if (hit)
+					if (hit.transform.gameObject.Equals (gameObject))
 					{
-						if (hit.transform.gameObject.Equals (gameObject))
-						{
-							isSelected = !isSelected;
-						}
-						else if (!hit.transform.gameObject.CompareTag ("Civilian"))
-						{
-							isSelected = false;
-						}
+						Debug.Log("HIT");
+						isSelected = !isSelected;
 					}
-					else
+					else if (!hit.transform.gameObject.CompareTag ("Civilian"))
 					{
 						isSelected = false;
 					}
-				}
-				#endregion
-				//capture the mouse position in screen space when the button was first pressed
-				initMousePos = Camera.main.WorldToScreenPoint(mousePos);
 
-				isSelectPressed = true;
+					//prevent selection box from being used if single select happened
+					noMarquee = true;
+				}
+				else
+				{
+					isSelected = false;
+					noMarquee = false;
+				}
+
+				Debug.Log("one");
 			}
-			else
+			#endregion
+			//capture the mouse position in screen space when the button was first pressed
+			initMousePos = Camera.main.WorldToScreenPoint(mousePos);
+
+			isSelectPressed = true;
+		}
+		else
+		{
+			isSelectPressed = false;
+		}
+			
+		if(Input.GetButton("Select"))
+		{
+			if (noMarquee == false)
 			{
 				#region Selection Box
 				//when held down and the mouse is dragged, creates a selection box that selects all civilians within
 				boxSelect = new Rect(Mathf.Min(initMousePos.x, Camera.main.WorldToScreenPoint(mousePos).x), 
-									Mathf.Min(initMousePos.y, Camera.main.WorldToScreenPoint(mousePos).y), 
-									Mathf.Abs(initMousePos.x - Camera.main.WorldToScreenPoint(mousePos).x), 
-									Mathf.Abs(initMousePos.y - Camera.main.WorldToScreenPoint(mousePos).y));
-				
+					Mathf.Min(initMousePos.y, Camera.main.WorldToScreenPoint(mousePos).y), 
+					Mathf.Abs(initMousePos.x - Camera.main.WorldToScreenPoint(mousePos).x), 
+					Mathf.Abs(initMousePos.y - Camera.main.WorldToScreenPoint(mousePos).y));
+
 				if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
 				{
 					isSelected = true;
 				}
 				else
 				{
+					Debug.Log("OUTSIDE");
 					isSelected = false;
 				}
 				#endregion
+
+				Debug.Log("box");
+				isSelectPressed = true;
 			}
 		}
 		else
 		{
 			isSelectPressed = false;
+		}
+		#endregion
+
+		#region Is Selected Visual Feedback
+		if (isSelected)
+		{
+			(gameObject.GetComponent("Halo") as Behaviour).enabled = true;
+		}
+		else
+		{
+			(gameObject.GetComponent("Halo") as Behaviour).enabled = false;
 		}
 		#endregion
 
@@ -220,6 +331,21 @@ public class eCivilianController : MonoBehaviour {
 			TakeDmg(34);
 		}
 		#endregion
+
+		#region Invincibility Timer
+		if (invincibleTimerOn)
+		{
+			healthBar.gameObject.GetComponentInChildren<Image>().color = Color.white;
+			invincibleTimer -= Time.deltaTime;
+			if (invincibleTimer <= 0)
+			{
+				invincibleTimer = invincibleTimeLimit;
+				invincibleTimerOn = false;
+			}
+		}
+		#endregion
+
+
 	}
 	#endregion
 
@@ -241,12 +367,30 @@ public class eCivilianController : MonoBehaviour {
 	#region Take Damage Function
 	public void TakeDmg(int amt)
 	{
-		health -= amt;
-		healthBar.value = health;
-		if (health <= 0 && !Dying && !Dead)
+		//take damage if...
+		if (!Dying && !Dead)
 		{
-			StartDying();
+			//...not in the state of dying or dead
+			if (invincibleTimerOn == false)
+			{
+				//...and not invincible
+				health -= amt;
+				healthBar.value = health;
+
+				//enter Dying state if no more health, otherwise become invincible
+				if (health <= 0)
+				{
+					StartDying ();
+				}
+				else
+				{
+					invincibleTimerOn = true;
+				}
+			}
 		}
+
+		Debug.Log("Health: " + health.ToString());
+
 	}
 	#endregion
 

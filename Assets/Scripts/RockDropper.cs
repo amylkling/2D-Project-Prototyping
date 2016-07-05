@@ -12,7 +12,7 @@ public class RockDropper : MonoBehaviour
 	private float actualTimer;
 	private int dropIndex;
 
-	void Start()
+	void Awake()
 	{
 		actualTimer = dropTimer;
 		dropIndex = 0;

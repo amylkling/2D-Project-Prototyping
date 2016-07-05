@@ -80,3 +80,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 Assets/Plugins/Pixelplacement/iTween.meta
+Assets/Plugins.meta
+Assets/Plugins/Pixelplacement.meta
