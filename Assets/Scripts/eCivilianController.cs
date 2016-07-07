@@ -11,6 +11,7 @@ public class eCivilianController : MonoBehaviour {
 	public float walkSpeed = 3f;				//how fast the civilian should move
 	public Vector2 clickPos;					//the position of the mouse when the button was clicked
 	public bool isDeployPressed = false;		//prevent holding the button from doing anything
+	public bool isDeployed = false;				//whether or not a marker exists
 	public bool isStopPressed = false;			//prevent holding the button from doing anything
 	public bool stop = false;					//whether or not the civilian moves
 	public GameObject marker;					//reference the marker prefab
@@ -39,6 +40,7 @@ public class eCivilianController : MonoBehaviour {
 	private float invincibleTimer = 0f;			//countdown for how long invincibility lasts
 	public float invincibleTimeLimit = 5f;		//how long invincibility should last
 
+	private bool facingRight = true;			//keep track of which way the character is facing
 
 	#endregion
 
@@ -93,6 +95,7 @@ public class eCivilianController : MonoBehaviour {
 					Destroy(GameObject.FindGameObjectWithTag("Marker"));
 					Instantiate(marker, markerPos, Quaternion.identity);
 				}
+				isDeployed = true;
 				isDeployPressed = true;
 			}
 		}
@@ -346,6 +349,12 @@ public class eCivilianController : MonoBehaviour {
 		#endregion
 
 
+		if (GameObject.FindGameObjectWithTag("Marker") == null)
+		{
+			isDeployed = false;
+		}
+
+
 	}
 	#endregion
 
@@ -353,14 +362,28 @@ public class eCivilianController : MonoBehaviour {
 	void FixedUpdate()
 	{
 		//move the civilian to the target position with the set walk speed or keep it still
-		if (rgdb2D.position != clickPos && !stop && !Dead && !Dying)
+		if (rgdb2D.position != clickPos && !stop && !Dead && !Dying && isDeployed)
 		{
+			Debug.Log("marching on");
 			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, clickPos, walkSpeed * Time.deltaTime);
 		}
 		else
 		{
 			rgdb2D.position = rgdb2D.position;
 		}
+
+		#region Facing Direction
+		// If the destination is to the right and the civ is facing left...
+		if (clickPos.x > rgdb2D.position.x && !facingRight && isDeployed) {
+			// ... flip the player.
+			Flip ();
+		}
+		// Otherwise if the destination is to the left and the civ is facing right...
+		else if (clickPos.x < rgdb2D.position.x && facingRight && isDeployed) {
+			// ... flip the player.
+			Flip ();
+		}
+		#endregion
 	}
 	#endregion
 
@@ -405,6 +428,19 @@ public class eCivilianController : MonoBehaviour {
 	void StartDying()
 	{
 		Dying = true;
+	}
+	#endregion
+
+	#region Flip Function
+	private void Flip ()
+	{
+		// Switch the way the civ is labelled as facing.
+		facingRight = !facingRight;
+
+		// Multiply the civ's x local scale by -1.
+		Vector3 theScale = transform.localScale;
+		theScale.x *= -1;
+		transform.localScale = theScale;
 	}
 	#endregion
 }
