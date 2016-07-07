@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class eCivilianController : MonoBehaviour {
@@ -41,6 +42,7 @@ public class eCivilianController : MonoBehaviour {
 	public float invincibleTimeLimit = 5f;		//how long invincibility should last
 
 	private bool facingRight = true;			//keep track of which way the character is facing
+	public CivRTSUnitHandling unitHandling;		//reference the civilian RTS unit-style handling script
 
 	#endregion
 
@@ -75,36 +77,36 @@ public class eCivilianController : MonoBehaviour {
 		//keep track of how many markers are in the scene
 		mars = GameObject.FindGameObjectsWithTag("Marker");
 
-		#region Marker Controls
+		#region Marker Controls - Now Controlled By CivRTSUnitHandling
 		//controls for civilian movement
-		if (Input.GetAxis ("Deploy") != 0)
-		{
-			if (isDeployPressed == false && isSelected)
-			{
-				//when the button is pressed, set the civ's target position
-				clickPos = new Vector2(mousePos.x, rgdb2D.position.y);
-				markerPos = new Vector3(clickPos.x, clickPos.y - 0.5f, 0);
-
-				//place a marker if there isn't one already or replace the current one
-				if (mars.Length == 0)
-				{
-					Instantiate(marker, markerPos, Quaternion.identity);
-				}
-				else if (mars.Length == 1)
-				{
-					Destroy(GameObject.FindGameObjectWithTag("Marker"));
-					Instantiate(marker, markerPos, Quaternion.identity);
-				}
-				isDeployed = true;
-				isDeployPressed = true;
-			}
-		}
-		else
-		{
-			//when not pressed it should stay still
-			isDeployPressed = false;
-			clickPos.y = rgdb2D.position.y;
-		}
+//		if (Input.GetButtonDown("Deploy"))
+//		{
+//			if (isDeployPressed == false && isSelected)
+//			{
+//				//when the button is pressed, set the civ's target position
+//				clickPos = new Vector2(mousePos.x, rgdb2D.position.y);
+//				markerPos = new Vector3(clickPos.x, clickPos.y - 0.5f, 0);
+//
+//				//place a marker if there isn't one already or replace the current one
+//				if (mars.Length == 0)
+//				{
+//					Instantiate(marker, markerPos, Quaternion.identity);
+//				}
+//				else if (mars.Length == 1)
+//				{
+//					Destroy(GameObject.FindGameObjectWithTag("Marker"));
+//					Instantiate(marker, markerPos, Quaternion.identity);
+//				}
+//				isDeployed = true;
+//				isDeployPressed = true;
+//			}
+//		}
+//		else
+//		{
+//			//when not pressed it should stay still
+//			isDeployPressed = false;
+//			clickPos.y = rgdb2D.position.y;
+//		}
 		#endregion
 
 		#region Stopping Controls
@@ -211,6 +213,11 @@ public class eCivilianController : MonoBehaviour {
 				Debug.Log("Time: " + Time.time);
 				Debug.Log("Time Difference: " + (Time.time - pressTime));
 				isSelected = true;
+				//when a civilian is selected, check if it is in the selectedCivs list before adding it
+				if (!unitHandling.selectedCivs.Contains(gameObject))
+				{
+					unitHandling.selectedCivs.Add(gameObject);
+				}
 				Debug.Log("isSelected: " + isSelected.ToString());
 				pressTime = Time.time;
 
@@ -236,10 +243,32 @@ public class eCivilianController : MonoBehaviour {
 					{
 						Debug.Log("HIT");
 						isSelected = !isSelected;
+						if (isSelected)
+						{
+							//when a civilian is selected, check if it is in the selectedCivs list before adding it
+							if (!unitHandling.selectedCivs.Contains(gameObject))
+							{
+								unitHandling.selectedCivs.Add(gameObject);
+							}
+
+						}
+						else
+						{
+							//when a civilian is deselected, check if it is in the selectedCivs list before removing it
+							if (unitHandling.selectedCivs.Contains(gameObject))
+							{
+								unitHandling.selectedCivs.Remove(gameObject);
+							}
+						}
 					}
 					else if (!hit.transform.gameObject.CompareTag ("Civilian"))
 					{
 						isSelected = false;
+						//when a civilian is deselected, check if it is in the selectedCivs list before removing it
+						if (unitHandling.selectedCivs.Contains(gameObject))
+						{
+							unitHandling.selectedCivs.Remove(gameObject);
+						}
 					}
 
 					//prevent selection box from being used if single select happened
@@ -248,6 +277,11 @@ public class eCivilianController : MonoBehaviour {
 				else
 				{
 					isSelected = false;
+					//when a civilian is deselected, check if it is in the selectedCivs list before removing it
+					if (unitHandling.selectedCivs.Contains(gameObject))
+					{
+						unitHandling.selectedCivs.Remove(gameObject);
+					}
 					noMarquee = false;
 				}
 
@@ -278,11 +312,21 @@ public class eCivilianController : MonoBehaviour {
 				if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
 				{
 					isSelected = true;
+					//when a civilian is selected, check if it is in the selectedCivs list before adding it
+					if (!unitHandling.selectedCivs.Contains(gameObject))
+					{
+						unitHandling.selectedCivs.Add(gameObject);
+					}
 				}
 				else
 				{
 					Debug.Log("OUTSIDE");
 					isSelected = false;
+					//when a civilian is deselected, check if it is in the selectedCivs list before removing it
+					if (unitHandling.selectedCivs.Contains(gameObject))
+					{
+						unitHandling.selectedCivs.Remove(gameObject);
+					}
 				}
 				#endregion
 
@@ -297,6 +341,7 @@ public class eCivilianController : MonoBehaviour {
 		#endregion
 
 		#region Is Selected Visual Feedback
+		//enable the Halo component if the civ is selected
 		if (isSelected)
 		{
 			(gameObject.GetComponent("Halo") as Behaviour).enabled = true;
@@ -310,6 +355,7 @@ public class eCivilianController : MonoBehaviour {
 		#region Dying
 		if (Dying)
 		{
+			//start a timer for how long to remain in the Dying state before switching to Death state
 			Debug.Log("I'm dying!!");
 			dyingTimer -= Time.deltaTime;
 			if (dyingTimer <= 0)
@@ -324,6 +370,7 @@ public class eCivilianController : MonoBehaviour {
 		#region Dead
 		if (Dead)
 		{
+			//Dead is dead
 			Destroy(gameObject);
 		}
 		#endregion
@@ -338,6 +385,7 @@ public class eCivilianController : MonoBehaviour {
 		#region Invincibility Timer
 		if (invincibleTimerOn)
 		{
+			//start a timer for how long invincibility lasts
 			healthBar.gameObject.GetComponentInChildren<Image>().color = Color.white;
 			invincibleTimer -= Time.deltaTime;
 			if (invincibleTimer <= 0)
