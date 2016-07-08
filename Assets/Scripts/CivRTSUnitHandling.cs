@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class CivRTSUnitHandling : MonoBehaviour {
 
 	public List<GameObject> selectedCivs;		//stores all selected civs as determined by eCivilianController
 	public List<GameObject> sortedCivs;			//stores selected civs after sorting by distance to destination
 	public Vector2 destination;					//the destination of the civs, based on the player's input
-	public float distToGround = 1f;				//how far off the ground to place the marker
+	public float distToGround = .5f;			//how far off the ground to place the marker
 	public float civPosOffset = 3f;				//how far from each other the civs should be when they stop
 
 	public eHeroController player;				//reference the player's script
@@ -48,60 +49,26 @@ public class CivRTSUnitHandling : MonoBehaviour {
 			//send the closest civ to the marker
 			//send the rest to a point marker + (number of civs in front of them) radius away
 
-			CreateMarker();
-			SortCivs();
-			SetDestinations();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			#region stuff
-//			if (isSelected)
-//			{
-//				//when the button is pressed, set the civ's target position
-//				destination = new Vector2(mousePos.x, rgdb2D.position.y);
-//				markerPos = new Vector3(destination.x, destination.y - 0.5f, 0);
-//
-//				//place a marker if there isn't one already or replace the current one
-//				if (mars.Length == 0)
-//				{
-//					Instantiate(marker, markerPos, Quaternion.identity);
-//				}
-//				else if (mars.Length == 1)
-//				{
-//					Destroy(GameObject.FindGameObjectWithTag("Marker"));
-//					Instantiate(marker, markerPos, Quaternion.identity);
-//				}
-//				isDeployed = true;
-//			}
-			#endregion
-		}
-		else
-		{
-			//when not pressed it should stay still
-//			destination.y = rgdb2D.position.y;
+			//ensure that this is only done if there are civs selected
+			if(selectedCivs.Count() != 0)
+			{
+				//don't do anything else unless a marker can be placed
+				if(CreateMarker())
+				{
+					SortCivs();
+					SetDestinations();
+				}
+			}
+				
 		}
 		#endregion
 
 	}
 
-	void CreateMarker()
+	bool CreateMarker()
 	{
 		//>>create a marker at mouse position
+		//>only make a marker if a valid position for it can be found
 		//1. find the appropriate positioning
 		//   ->the x value is the mouse position's
 		//   ->the y value needs to be a set height above the nearest ground
@@ -116,7 +83,7 @@ public class CivRTSUnitHandling : MonoBehaviour {
 			if (hit.transform.gameObject.CompareTag("Ground"))
 			{
 				markerPos = new Vector3(mousePos2D.x, hit.transform.position.y + distToGround, 0); 
-				destination = markerPos;
+				destination = new Vector2(markerPos.x, markerPos.y);
 
 				//place a marker if there isn't one already or replace the current one
 				if (mars.Length == 0)
@@ -128,11 +95,18 @@ public class CivRTSUnitHandling : MonoBehaviour {
 					Destroy(GameObject.FindGameObjectWithTag("Marker"));
 					Instantiate(marker, markerPos, Quaternion.identity);
 				}
+
+				return true;
 			}
 			else
 			{
 				Debug.Log("can't place marker here");
+				return false;
 			}
+		}
+		else
+		{
+			return false;
 		}
 
 	}
@@ -150,8 +124,16 @@ public class CivRTSUnitHandling : MonoBehaviour {
 		//   ->yeah go look that up again because of course you forgot how to do it
 		//4. add them to the sortedCivs list in order
 		//   ->closest to destination goes in first slot
+		//
+		//^^or, you know, just let the list sort itself you idiot
 
+		//example sorting function code
+		//hits = hits.OrderBy(x => Vector2.Distance(this.transform.position,x.transform.position)).ToList();
 
+		sortedCivs = selectedCivs.OrderBy(x => Vector2.Distance(
+			new Vector2(x.transform.position.x, x.transform.position.y), destination)).ToList();
+
+		Debug.Log("civs sorted!");
 
 	}
 
@@ -176,14 +158,34 @@ public class CivRTSUnitHandling : MonoBehaviour {
 		//   ->multiply the number of civs to an individual civ's radius (arbitrary offset number)
 		//   ->add that to the marker's x position
 		//   ->only set x destination, leave y as the civ's current y
+		//>problem: only works in negative direction
+		//   ->can't add when going in positive direction, need to subtract
+		//   ->RESOLVED
+		//>problem: only works if destination is outside of the group of civs
+		//   ->when a destination is placed between civs, they act strangely
 
 
+		sortedCivs[0].GetComponent<eCivilianController>().destPos.x = destination.x;
+		sortedCivs[0].GetComponent<eCivilianController>().stop = false;
 
 
 		foreach(GameObject civ in sortedCivs)
 		{
-			//
+			if (destination.x < civ.GetComponent<Rigidbody2D>().position.x)
+			{
+				civ.GetComponent<eCivilianController>().destPos.x = destination.x + 
+					((float)sortedCivs.IndexOf(civ) * civPosOffset);
+			}
+			else if (destination.x > civ.GetComponent<Rigidbody2D>().position.x)
+			{
+				civ.GetComponent<eCivilianController>().destPos.x = destination.x - 
+					((float)sortedCivs.IndexOf(civ) * civPosOffset);
+			}
+
+			civ.GetComponent<eCivilianController>().stop = false;
+
 		}
+
 	}
 
 

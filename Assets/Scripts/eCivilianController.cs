@@ -10,10 +10,10 @@ public class eCivilianController : MonoBehaviour {
 	public Vector3 mousePos;					//holder for mouse input from player's script
 	private Rigidbody2D rgdb2D;					//the civilian's rigidbody2D component
 	public float walkSpeed = 3f;				//how fast the civilian should move
-	public Vector2 clickPos;					//the position of the mouse when the button was clicked
+//	public Vector2 clickPos;					//the position of the mouse when the button was clicked
+	public Vector2 destPos;						//the destination as determined by CivRTSUnitHandling
 	public bool isDeployPressed = false;		//prevent holding the button from doing anything
-	public bool isDeployed = false;				//whether or not a marker exists
-	public bool isStopPressed = false;			//prevent holding the button from doing anything
+//	public bool isDeployed = false;				//whether or not a marker exists
 	public bool stop = false;					//whether or not the civilian moves
 	public GameObject marker;					//reference the marker prefab
 	public Vector3 markerPos;					//holder for the marker's spawn position
@@ -56,7 +56,8 @@ public class eCivilianController : MonoBehaviour {
 		//initiate rigidbody2d component
 		rgdb2D = GetComponent<Rigidbody2D>();
 		//initiate the civilian's target position to its current position
-		clickPos = rgdb2D.position;
+		//clickPos = rgdb2D.position;
+		destPos = rgdb2D.position;
 		pressTime = Time.time;
 		//initiate health
 		health = maxHealth;
@@ -111,18 +112,13 @@ public class eCivilianController : MonoBehaviour {
 
 		#region Stopping Controls
 		//controls for stopping the civilian
-		if (Input.GetAxis("Stop") != 0)
+		if (Input.GetButtonDown("Stop"))
 		{
 			//when the button is pressed, the civilian stops or resumes movement
-			if (isStopPressed == false && isSelected)
+			if (isSelected)
 			{
-				isStopPressed = true;
 				stop = !stop;
 			}
-		}
-		else
-		{
-			isStopPressed = false;
 		}
 		#endregion
 
@@ -396,11 +392,8 @@ public class eCivilianController : MonoBehaviour {
 		}
 		#endregion
 
-
-		if (GameObject.FindGameObjectWithTag("Marker") == null)
-		{
-			isDeployed = false;
-		}
+		//prevent civ from constantly bouncing
+		destPos.y = rgdb2D.position.y;
 
 
 	}
@@ -410,24 +403,24 @@ public class eCivilianController : MonoBehaviour {
 	void FixedUpdate()
 	{
 		//move the civilian to the target position with the set walk speed or keep it still
-		if (rgdb2D.position != clickPos && !stop && !Dead && !Dying && isDeployed)
+		if (rgdb2D.position != destPos && !stop && !Dead && !Dying)
 		{
 			Debug.Log("marching on");
-			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, clickPos, walkSpeed * Time.deltaTime);
+			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, destPos, walkSpeed * Time.deltaTime);
 		}
 		else
 		{
-			rgdb2D.position = rgdb2D.position;
+			stop = true;
 		}
 
 		#region Facing Direction
 		// If the destination is to the right and the civ is facing left...
-		if (clickPos.x > rgdb2D.position.x && !facingRight && isDeployed) {
+		if (destPos.x > rgdb2D.position.x && !facingRight) {
 			// ... flip the player.
 			Flip ();
 		}
 		// Otherwise if the destination is to the left and the civ is facing right...
-		else if (clickPos.x < rgdb2D.position.x && facingRight && isDeployed) {
+		else if (destPos.x < rgdb2D.position.x && facingRight) {
 			// ... flip the player.
 			Flip ();
 		}
