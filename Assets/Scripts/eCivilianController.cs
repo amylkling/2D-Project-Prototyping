@@ -36,6 +36,7 @@ public class eCivilianController : MonoBehaviour {
 	private float dyingTimer = 0f;				//the countdown for when dying turns into dead
 	public float dyingTimeLimit = 30f;			//the amount of time it takes for dying to turn into dead
 	public Slider healthBar;					//the UI bar that shows the civilian's health
+	public bool damaged = false;
 
 	public bool invincibleTimerOn = false;		//start count down on how long invincibility lasts
 	private float invincibleTimer = 0f;			//countdown for how long invincibility lasts
@@ -209,19 +210,19 @@ public class eCivilianController : MonoBehaviour {
 			//when double tapped, all civilians are selected
 			if (Time.time - pressTime <= pressTimeLimit)
 			{
-				Debug.Log("Time: " + Time.time);
-				Debug.Log("Time Difference: " + (Time.time - pressTime));
+//				Debug.Log("Time: " + Time.time);
+//				Debug.Log("Time Difference: " + (Time.time - pressTime));
 				isSelected = true;
 				//when a civilian is selected, check if it is in the selectedCivs list before adding it
 				if (!unitHandling.selectedCivs.Contains(gameObject))
 				{
 					unitHandling.selectedCivs.Add(gameObject);
 				}
-				Debug.Log("isSelected: " + isSelected.ToString());
+//				Debug.Log("isSelected: " + isSelected.ToString());
 				pressTime = Time.time;
 
 				noMarquee = true;
-				Debug.Log("all");
+//				Debug.Log("all");
 			}
 			#endregion
 			#region Select One
@@ -230,7 +231,7 @@ public class eCivilianController : MonoBehaviour {
 				//when the button is pressed while mouse is hovering over the civilian, it is selected
 				//when pressed while mouse is not hovering over any civilian, the civilian is deselected
 				pressTime = Time.time; 
-				Debug.Log("Press Time: " + pressTime); 
+//				Debug.Log("Press Time: " + pressTime); 
 
 				mousePos2D = new Vector2 (mousePos.x, mousePos.y);
 
@@ -240,7 +241,7 @@ public class eCivilianController : MonoBehaviour {
 				{
 					if (hit.transform.gameObject.Equals (gameObject))
 					{
-						Debug.Log("HIT");
+//						Debug.Log("HIT");
 						isSelected = !isSelected;
 						if (isSelected)
 						{
@@ -284,7 +285,7 @@ public class eCivilianController : MonoBehaviour {
 					noMarquee = false;
 				}
 
-				Debug.Log("one");
+//				Debug.Log("one");
 			}
 			#endregion
 			//capture the mouse position in screen space when the button was first pressed
@@ -319,7 +320,7 @@ public class eCivilianController : MonoBehaviour {
 				}
 				else
 				{
-					Debug.Log("OUTSIDE");
+//					Debug.Log("OUTSIDE");
 					isSelected = false;
 					//when a civilian is deselected, check if it is in the selectedCivs list before removing it
 					if (unitHandling.selectedCivs.Contains(gameObject))
@@ -329,7 +330,7 @@ public class eCivilianController : MonoBehaviour {
 				}
 				#endregion
 
-				Debug.Log("box");
+//				Debug.Log("box");
 				isSelectPressed = true;
 			}
 		}
@@ -355,7 +356,7 @@ public class eCivilianController : MonoBehaviour {
 		if (Dying)
 		{
 			//start a timer for how long to remain in the Dying state before switching to Death state
-			Debug.Log("I'm dying!!");
+			Debug.Log(gameObject.name + ": I'm dying!!");
 			dyingTimer -= Time.deltaTime;
 			if (dyingTimer <= 0)
 			{
@@ -369,6 +370,12 @@ public class eCivilianController : MonoBehaviour {
 		#region Dead
 		if (Dead)
 		{
+			//remove the civ, if previously selected, from the selected civs list
+			if (unitHandling.selectedCivs.Contains(gameObject))
+			{
+				unitHandling.selectedCivs.Remove(gameObject);
+			}
+
 			//Dead is dead
 			Destroy(gameObject);
 		}
@@ -385,19 +392,21 @@ public class eCivilianController : MonoBehaviour {
 		if (invincibleTimerOn)
 		{
 			//start a timer for how long invincibility lasts
+			//when it runs out, allow civ to move and get damaged again
 			healthBar.gameObject.GetComponentInChildren<Image>().color = Color.white;
 			invincibleTimer -= Time.deltaTime;
 			if (invincibleTimer <= 0)
 			{
 				invincibleTimer = invincibleTimeLimit;
 				invincibleTimerOn = false;
+				damaged = false;
+				stop = false;
 			}
 		}
 		#endregion
 
 		//prevent civ from constantly bouncing
 		destPos.y = rgdb2D.position.y;
-
 
 	}
 	#endregion
@@ -406,9 +415,9 @@ public class eCivilianController : MonoBehaviour {
 	void FixedUpdate()
 	{
 		//move the civilian to the target position with the set walk speed or keep it still
-		if (rgdb2D.position != destPos && !stop && !Dead && !Dying)
+		if (rgdb2D.position != destPos && !stop && !Dead && !Dying && !damaged)
 		{
-			Debug.Log("marching on");
+			Debug.Log(gameObject.name + " is marching on!");
 			rgdb2D.position = Vector2.MoveTowards(rgdb2D.position, destPos, walkSpeed * Time.deltaTime);
 		}
 		else
@@ -462,7 +471,7 @@ public class eCivilianController : MonoBehaviour {
 				health -= amt;
 				healthBar.value = health;
 
-				//enter Dying state if no more health, otherwise become invincible
+				//enter Dying state if no more health, otherwise enter damaged state and become invincible
 				if (health <= 0)
 				{
 					StartDying ();
@@ -470,11 +479,12 @@ public class eCivilianController : MonoBehaviour {
 				else
 				{
 					invincibleTimerOn = true;
+					damaged = true;
 				}
 			}
 		}
 
-		Debug.Log("Health: " + health.ToString());
+		Debug.Log(gameObject.name + "'s Health: " + health.ToString());
 
 	}
 	#endregion
