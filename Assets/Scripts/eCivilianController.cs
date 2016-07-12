@@ -43,6 +43,7 @@ public class eCivilianController : MonoBehaviour {
 
 	private bool facingRight = true;			//keep track of which way the character is facing
 	public CivRTSUnitHandling unitHandling;		//reference the civilian RTS unit-style handling script
+	public List<Collision2D> otherCivs;			//store the collision data of any civs this civ collides with
 
 	#endregion
 
@@ -65,6 +66,8 @@ public class eCivilianController : MonoBehaviour {
 		invincibleTimer = invincibleTimeLimit;
 		healthBar.value = health;
 		healthBar.maxValue = maxHealth;
+		//instantiate the list for collisions with other civs
+		otherCivs = new List<Collision2D>();
 	}
 	#endregion
 
@@ -413,14 +416,32 @@ public class eCivilianController : MonoBehaviour {
 			stop = true;
 		}
 
+		//after stopping/dying/being dead, turn collision back on for any civs previously collided with
+		if (stop || Dead || Dying)
+		{
+			if (otherCivs.Count != 0)
+			{
+				int count = otherCivs.Count;
+
+				for(int i = count; i > 0; i--)
+				{
+					Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), 
+						otherCivs[i-1].gameObject.GetComponent<Collider2D>(), ignore: false);
+
+					otherCivs.Remove(otherCivs[i-1]);
+				}	
+			}
+		}
+
+
 		#region Facing Direction
 		// If the destination is to the right and the civ is facing left...
-		if (destPos.x > rgdb2D.position.x && !facingRight) {
+		if (destPos.x > rgdb2D.position.x && !facingRight && !stop) {
 			// ... flip the player.
 			Flip ();
 		}
 		// Otherwise if the destination is to the left and the civ is facing right...
-		else if (destPos.x < rgdb2D.position.x && facingRight) {
+		else if (destPos.x < rgdb2D.position.x && facingRight && !stop) {
 			// ... flip the player.
 			Flip ();
 		}
@@ -482,6 +503,40 @@ public class eCivilianController : MonoBehaviour {
 		Vector3 theScale = transform.localScale;
 		theScale.x *= -1;
 		transform.localScale = theScale;
+	}
+	#endregion
+
+	#region On Collision Enter Function
+	void OnCollisionEnter2D(Collision2D col)
+	{
+		//if collided with another civ while moving, turn off collision with that civ
+		if (col.gameObject.CompareTag("Civilian") && !stop && !Dead && !Dying)
+		{
+			otherCivs.Add(col);
+
+			Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), 
+				col.gameObject.GetComponent<Collider2D>());
+		}
+	}
+	#endregion
+
+	#region On Collision Stay Function
+	void OnCollisionStay2D(Collision2D col)
+	{
+		//after turning on collision again, if the clliders are still touching, 
+		//separate them by a minuscule amount according to relative positioning
+		//this allows On Collision Enter to be called again without any extra input from the player
+		if (col.gameObject.CompareTag("Civilian"))
+		{
+			if(col.gameObject.GetComponent<Rigidbody2D>().position.x > rgdb2D.position.x)
+			{
+				rgdb2D.MovePosition(new Vector2(rgdb2D.position.x - .01f, rgdb2D.position.y));
+			}
+			else if (col.gameObject.GetComponent<Rigidbody2D>().position.x < rgdb2D.position.x)
+			{
+				rgdb2D.MovePosition(new Vector2(rgdb2D.position.x + .01f, rgdb2D.position.y));
+			}
+		}
 	}
 	#endregion
 }

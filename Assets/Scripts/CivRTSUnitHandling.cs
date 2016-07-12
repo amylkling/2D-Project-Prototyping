@@ -26,6 +26,9 @@ public class CivRTSUnitHandling : MonoBehaviour {
 		mousePos = player.mousePos;
 		mousePos2D = new Vector2(mousePos.x, mousePos.y);
 
+		//instantiate the list of selected civs - not necessary, but probably a good idea
+		selectedCivs = new List<GameObject>();
+
 	}
 
 
