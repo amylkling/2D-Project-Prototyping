@@ -17,7 +17,7 @@ public class eCivilianController : MonoBehaviour {
 	public bool stop = false;					//whether or not the civilian moves
 	public GameObject marker;					//reference the marker prefab
 	public Vector3 markerPos;					//holder for the marker's spawn position
-	private GameObject[] mars;					//holder for an array of markers in the scene
+//	private GameObject[] mars;					//holder for an array of markers in the scene
 	public bool isSelected = false;				//whether or not a civ can be considered "selected"
 	public bool isSelectPressed = false;		//prevent holding the button from doing anything
 	private Vector2 mousePos2D;					//holder for the conversion of the mouse position to 2D
@@ -45,6 +45,7 @@ public class eCivilianController : MonoBehaviour {
 	private bool facingRight = true;			//keep track of which way the character is facing
 	public CivRTSUnitHandling unitHandling;		//reference the civilian RTS unit-style handling script
 	public List<Collision2D> otherCivs;			//store the collision data of any civs this civ collides with
+	public Pause pauseMenu;						//reference the pausing script on the menu UI
 
 	#endregion
 
@@ -69,6 +70,8 @@ public class eCivilianController : MonoBehaviour {
 		healthBar.maxValue = maxHealth;
 		//instantiate the list for collisions with other civs
 		otherCivs = new List<Collision2D>();
+		//initiate pause script
+		pauseMenu = GameObject.Find("UI").GetComponent<Pause>();
 	}
 	#endregion
 
@@ -80,7 +83,7 @@ public class eCivilianController : MonoBehaviour {
 		mousePos = player.mousePos;
 
 		//keep track of how many markers are in the scene
-		mars = GameObject.FindGameObjectsWithTag("Marker");
+//		mars = GameObject.FindGameObjectsWithTag("Marker");
 
 		#region Marker Controls - Now Controlled By CivRTSUnitHandling
 		//controls for civilian movement
@@ -116,7 +119,7 @@ public class eCivilianController : MonoBehaviour {
 
 		#region Stopping Controls
 		//controls for stopping the civilian
-		if (Input.GetButtonDown("Stop"))
+		if (Input.GetButtonDown("Stop") && !pauseMenu.Paused())
 		{
 			//when the button is pressed, the civilian stops or resumes movement
 			if (isSelected)
@@ -204,7 +207,7 @@ public class eCivilianController : MonoBehaviour {
 		#endregion
 
 		#region Selection Controls
-		if(Input.GetButtonDown("Select"))
+		if(Input.GetButtonDown("Select") && !pauseMenu.Paused())
 		{
 			#region Select All
 			//when double tapped, all civilians are selected
@@ -291,14 +294,9 @@ public class eCivilianController : MonoBehaviour {
 			//capture the mouse position in screen space when the button was first pressed
 			initMousePos = Camera.main.WorldToScreenPoint(mousePos);
 
-			isSelectPressed = true;
-		}
-		else
-		{
-			isSelectPressed = false;
 		}
 			
-		if(Input.GetButton("Select"))
+		if(Input.GetButton("Select") && !pauseMenu.Paused())
 		{
 			if (noMarquee == false)
 			{
@@ -381,13 +379,6 @@ public class eCivilianController : MonoBehaviour {
 		}
 		#endregion
 
-		#region Temp Damaging Controls
-		if (Input.GetKeyDown(KeyCode.D))
-		{
-			TakeDmg(34);
-		}
-		#endregion
-
 		#region Invincibility Timer
 		if (invincibleTimerOn)
 		{
@@ -462,7 +453,7 @@ public class eCivilianController : MonoBehaviour {
 	public void TakeDmg(int amt)
 	{
 		//take damage if...
-		if (!Dying && !Dead)
+		if (!Dying && !Dead && !pauseMenu.Paused())
 		{
 			//...not in the state of dying or dead
 			if (invincibleTimerOn == false)

@@ -57,5 +57,11 @@ public class Pause : MonoBehaviour {
 		showPanels.HidePausePanel ();
 	}
 
+	public bool Paused()
+	{
+		//get function for isPaused variable
+		return isPaused;
+	}
+
 
 }

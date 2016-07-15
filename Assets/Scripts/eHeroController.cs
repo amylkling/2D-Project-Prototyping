@@ -171,14 +171,6 @@ public class eHeroController : MonoBehaviour
 		}
 		#endregion
 
-		#region Quit Game
-		//quit game when escape is pressed
-		if (Input.GetKeyDown (KeyCode.Escape))
-		{
-			Application.Quit ();
-		}
-		#endregion
-
 	}
 	#endregion
 

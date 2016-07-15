@@ -19,6 +19,8 @@ public class CivRTSUnitHandling : MonoBehaviour {
 	public Vector3 markerPos;					//holder for the marker's spawn position
 	public bool isDeployed = false;				//whether or not a marker exists
 
+	public Pause pauseMenu;						//reference game pausing script
+
 	void Start()
 	{
 		//initiate player script reference and variable from it
@@ -28,6 +30,9 @@ public class CivRTSUnitHandling : MonoBehaviour {
 
 		//instantiate the list of selected civs - not necessary, but probably a good idea
 		selectedCivs = new List<GameObject>();
+
+		//initiate pause script
+		pauseMenu = GameObject.Find("UI").GetComponent<Pause>();
 
 	}
 
@@ -45,7 +50,7 @@ public class CivRTSUnitHandling : MonoBehaviour {
 
 		#region Marker Controls
 		//controls for civilian movement
-		if (Input.GetButtonDown("Deploy"))
+		if (Input.GetButtonDown("Deploy") && !pauseMenu.Paused())
 		{
 			//create a marker at the mouse position
 			//sort the selected civs from closest to farthest
