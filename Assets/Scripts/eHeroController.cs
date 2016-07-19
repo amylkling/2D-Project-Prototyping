@@ -209,15 +209,6 @@ public class eHeroController : MonoBehaviour
 	#region On Collision Enter 2D Function
 	void OnCollisionEnter2D(Collision2D col)
 	{
-		#region Civilian Collision
-		//stop colliding with civs
-		if (col.gameObject.CompareTag("Civilian"))
-		{
-			Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), 
-				col.gameObject.GetComponent<Collider2D>());
-		}
-		#endregion
-
 		#region Breakable Object Collision
 		//break breakable objects when dashing
 		if (doDash)

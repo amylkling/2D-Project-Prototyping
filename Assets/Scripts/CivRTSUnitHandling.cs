@@ -5,25 +5,25 @@ using System.Linq;
 
 public class CivRTSUnitHandling : MonoBehaviour {
 
-	public List<GameObject> selectedCivs;		//stores all selected civs as determined by eCivilianController
-	public List<GameObject> sortedCivs;			//stores selected civs after sorting by distance to destination
-	public Vector2 destination;					//the destination of the civs, based on the player's input
-	public float distToGround = .5f;			//how far off the ground to place the marker
-	public float civPosOffset = 3f;				//how far from each other the civs should be when they stop
+	public List<GameObject> selectedCivs;					//stores all selected civs as determined by eCivilianController
+	public List<GameObject> sortedCivs;						//stores selected civs after sorting by distance to destination
+	public Vector2 destination;								//the destination of the civs, based on the player's input
+	public float distToGround = .5f;						//how far off the ground to place the marker
+	public float civPosOffset = 3f;							//how far from each other the civs should be when they stop
 
-	public eHeroController player;				//reference the player's script
-	public Vector3 mousePos;					//holder for mouse input from player's script
-	private Vector2 mousePos2D;					//holder for the conversion of the mouse position to 2D
-	private GameObject[] mars;					//holder for an array of markers in the scene
-	public GameObject marker;					//reference the marker prefab
-	public Vector3 markerPos;					//holder for the marker's spawn position
-	public bool isDeployed = false;				//whether or not a marker exists
+	[HideInInspector] public eHeroController player;		//reference the player's script
+	[HideInInspector] public Vector3 mousePos;				//holder for mouse input from player's script
+	[HideInInspector] private Vector2 mousePos2D;			//holder for the conversion of the mouse position to 2D
+	private GameObject[] mars;								//holder for an array of markers in the scene
+	public GameObject marker;								//reference the marker prefab
+	public Vector3 markerPos;								//holder for the marker's spawn position
+	[HideInInspector] public bool isDeployed = false;		//whether or not a marker exists
 
-	public Pause pauseMenu;						//reference game pausing script
+	[HideInInspector] public Pause pauseMenu;				//reference game pausing script
 
 	void Start()
 	{
-		//initiate player script reference and variable from it
+		//initialize player script reference and variable from it
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<eHeroController>();
 		mousePos = player.mousePos;
 		mousePos2D = new Vector2(mousePos.x, mousePos.y);
@@ -31,8 +31,11 @@ public class CivRTSUnitHandling : MonoBehaviour {
 		//instantiate the list of selected civs - not necessary, but probably a good idea
 		selectedCivs = new List<GameObject>();
 
-		//initiate pause script
-		pauseMenu = GameObject.Find("UI").GetComponent<Pause>();
+		//initialize pause script if running from main menu
+		if (GameObject.Find("UI") != null)
+		{
+			pauseMenu = GameObject.Find("UI").GetComponent<Pause>();
+		}
 
 	}
 
@@ -50,21 +53,24 @@ public class CivRTSUnitHandling : MonoBehaviour {
 
 		#region Marker Controls
 		//controls for civilian movement
-		if (Input.GetButtonDown("Deploy") && !pauseMenu.Paused())
+		if (Input.GetButtonDown("Deploy"))
 		{
-			//create a marker at the mouse position
-			//sort the selected civs from closest to farthest
-			//send the closest civ to the marker
-			//send the rest to a point marker + (number of civs in front of them) radius away
-
-			//ensure that this is only done if there are civs selected
-			if(selectedCivs.Count() != 0)
+			if (pauseMenu == null || !pauseMenu.Paused())
 			{
-				//don't do anything else unless a marker can be placed
-				if(CreateMarker())
+				//create a marker at the mouse position
+				//sort the selected civs from closest to farthest
+				//send the closest civ to the marker
+				//send the rest to a point marker + (number of civs in front of them) radius away
+
+				//ensure that this is only done if there are civs selected
+				if(selectedCivs.Count() != 0)
 				{
-					SortCivs();
-					SetDestinations();
+					//don't do anything else unless a marker can be placed
+					if(CreateMarker())
+					{
+						SortCivs();
+						SetDestinations();
+					}
 				}
 			}
 				

@@ -6,46 +6,47 @@ using UnityEngine.UI;
 public class eCivilianController : MonoBehaviour {
 
 	#region Variables
-	public eHeroController player;				//reference the player's script
-	public Vector3 mousePos;					//holder for mouse input from player's script
-	private Rigidbody2D rgdb2D;					//the civilian's rigidbody2D component
-	public float walkSpeed = 3f;				//how fast the civilian should move
-//	public Vector2 clickPos;					//the position of the mouse when the button was clicked
-	public Vector2 destPos;						//the destination as determined by CivRTSUnitHandling
-	public bool isDeployPressed = false;		//prevent holding the button from doing anything
-//	public bool isDeployed = false;				//whether or not a marker exists
-	public bool stop = false;					//whether or not the civilian moves
-	public GameObject marker;					//reference the marker prefab
-	public Vector3 markerPos;					//holder for the marker's spawn position
-//	private GameObject[] mars;					//holder for an array of markers in the scene
-	public bool isSelected = false;				//whether or not a civ can be considered "selected"
-	public bool isSelectPressed = false;		//prevent holding the button from doing anything
-	private Vector2 mousePos2D;					//holder for the conversion of the mouse position to 2D
+	public eHeroController player;								//reference the player's script
+	[HideInInspector] public Vector3 mousePos;					//holder for mouse input from player's script
+	private Rigidbody2D rgdb2D;									//the civilian's rigidbody2D component
+	public float walkSpeed = 3f;								//how fast the civilian should move
+//	public Vector2 clickPos;									//the position of the mouse when the button was clicked
+	[HideInInspector] public Vector2 destPos;					//the destination as determined by CivRTSUnitHandling
+	public bool isDeployPressed = false;						//prevent holding the button from doing anything
+//	public bool isDeployed = false;								//whether or not a marker exists
+	public bool stop = false;									//whether or not the civilian moves
+//	public GameObject marker;									//reference the marker prefab
+//	public Vector3 markerPos;									//holder for the marker's spawn position
+//	private GameObject[] mars;									//holder for an array of markers in the scene
+	public bool isSelected = false;								//whether or not a civ can be considered "selected"
+	[HideInInspector] public bool isSelectPressed = false;		//prevent holding the button from doing anything
+	private Vector2 mousePos2D;									//holder for the conversion of the mouse position to 2D
 
-	public bool selectAll = false;				//whether or not to select all civs, not just this one
-	private float pressTime;					//the time of the previous button press
-	public float pressTimeLimit = .10f;			//the amount of time between button presses for a double tap
-	public Rect boxSelect;						//holder for the invisible selection box
-	public Vector2 initMousePos;				//the position of the mouse when the selection box was created
-	public bool noMarquee = false;				//determine whether or not to use marquee/box selection
+	public bool selectAll = false;								//whether or not to select all civs, not just this one
+	private float pressTime;									//the time of the previous button press
+	public float pressTimeLimit = .10f;							//the amount of time between button presses for a double tap
+	[HideInInspector] public Rect boxSelect;					//holder for the invisible selection box
+	[HideInInspector] public Vector2 initMousePos;				//the position of the mouse when the selection box was created
+	public bool noMarquee = false;								//determine whether or not to use marquee/box selection
 
-	public int maxHealth = 100;					//the maximum health of the civilian
-	private int health = 100;					//the current health of the civilian
-	private bool Dead = false;					//whether or not the civilian is dead
-	private bool Dying = false;					//whether or not the civilian is in a dying state
-	private float dyingTimer = 0f;				//the countdown for when dying turns into dead
-	public float dyingTimeLimit = 30f;			//the amount of time it takes for dying to turn into dead
-	public Slider healthBar;					//the UI bar that shows the civilian's health
+	public int maxHealth = 100;									//the maximum health of the civilian
+	private int health = 100;									//the current health of the civilian
+	private bool Dead = false;									//whether or not the civilian is dead
+	public bool Dying = false;									//whether or not the civilian is in a dying state
+	private float dyingTimer = 0f;								//the countdown for when dying turns into dead
+	public float dyingTimeLimit = 30f;							//the amount of time it takes for dying to turn into dead
+	public Slider healthBar;									//the UI bar that shows the civilian's health
 	public bool damaged = false;
 
-	public bool invincibleTimerOn = false;		//start count down on how long invincibility lasts
-	private float invincibleTimer = 0f;			//countdown for how long invincibility lasts
-	public float invincibleTimeLimit = 5f;		//how long invincibility should last
+	[HideInInspector] public bool invincibleTimerOn = false;	//start count down on how long invincibility lasts
+	private float invincibleTimer = 0f;							//countdown for how long invincibility lasts
+	public float invincibleTimeLimit = 5f;						//how long invincibility should last
 
-	private bool facingRight = true;			//keep track of which way the character is facing
-	public CivRTSUnitHandling unitHandling;		//reference the civilian RTS unit-style handling script
-	public List<Collision2D> otherCivs;			//store the collision data of any civs this civ collides with
-	public Pause pauseMenu;						//reference the pausing script on the menu UI
+	private bool facingRight = true;							//keep track of which way the character is facing
+	public CivRTSUnitHandling unitHandling;						//reference the civilian RTS unit-style handling script
+	[HideInInspector] public List<Collision2D> otherCivs;		//store the collision data of any civs this civ collides with
+	[HideInInspector] public Pause pauseMenu;					//reference the pausing script on the menu UI
+	public GameController gameMaster;							//reference the general control script 
 
 	#endregion
 
@@ -53,16 +54,16 @@ public class eCivilianController : MonoBehaviour {
 	// Use this for initialization
 	void Awake () 
 	{
-		//initiate player script reference and variable from it
+		//initialize player script reference and variable from it
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<eHeroController>();
 		mousePos = player.mousePos;
-		//initiate rigidbody2d component
+		//initialize rigidbody2d component
 		rgdb2D = GetComponent<Rigidbody2D>();
-		//initiate the civilian's target position to its current position
+		//initialize the civilian's target position to its current position
 		//clickPos = rgdb2D.position;
 		destPos = rgdb2D.position;
 		pressTime = Time.time;
-		//initiate health
+		//initialize health
 		health = maxHealth;
 		dyingTimer = dyingTimeLimit;
 		invincibleTimer = invincibleTimeLimit;
@@ -70,8 +71,13 @@ public class eCivilianController : MonoBehaviour {
 		healthBar.maxValue = maxHealth;
 		//instantiate the list for collisions with other civs
 		otherCivs = new List<Collision2D>();
-		//initiate pause script
-		pauseMenu = GameObject.Find("UI").GetComponent<Pause>();
+		//initialize pause script if running from main menu
+		if (GameObject.Find("UI") != null)
+		{
+			pauseMenu = GameObject.Find("UI").GetComponent<Pause>();
+		}
+		//initialize general control script
+		gameMaster = GameObject.Find("Overseer").GetComponent<GameController>();
 	}
 	#endregion
 
@@ -119,12 +125,18 @@ public class eCivilianController : MonoBehaviour {
 
 		#region Stopping Controls
 		//controls for stopping the civilian
-		if (Input.GetButtonDown("Stop") && !pauseMenu.Paused())
+		if (Input.GetButtonDown("Stop"))
 		{
-			//when the button is pressed, the civilian stops or resumes movement
-			if (isSelected)
+			if (pauseMenu == null || !pauseMenu.Paused())
 			{
-				stop = !stop;
+				if (gameMaster.activeCivs.Contains(gameObject))
+				{
+					//when the button is pressed, the civilian stops or resumes movement
+					if (isSelected)
+					{
+						stop = !stop;
+					}
+				}
 			}
 		}
 		#endregion
@@ -207,129 +219,140 @@ public class eCivilianController : MonoBehaviour {
 		#endregion
 
 		#region Selection Controls
-		if(Input.GetButtonDown("Select") && !pauseMenu.Paused())
+		if(Input.GetButtonDown("Select"))
 		{
-			#region Select All
-			//when double tapped, all civilians are selected
-			if (Time.time - pressTime <= pressTimeLimit)
+			if (pauseMenu == null || !pauseMenu.Paused())
 			{
-//				Debug.Log("Time: " + Time.time);
-//				Debug.Log("Time Difference: " + (Time.time - pressTime));
-				isSelected = true;
-				//when a civilian is selected, check if it is in the selectedCivs list before adding it
-				if (!unitHandling.selectedCivs.Contains(gameObject))
+				if (gameMaster.activeCivs.Contains(gameObject))
 				{
-					unitHandling.selectedCivs.Add(gameObject);
-				}
-//				Debug.Log("isSelected: " + isSelected.ToString());
-				pressTime = Time.time;
-
-				noMarquee = true;
-//				Debug.Log("all");
-			}
-			#endregion
-			#region Select One
-			else
-			{
-				//when the button is pressed while mouse is hovering over the civilian, it is selected
-				//when pressed while mouse is not hovering over any civilian, the civilian is deselected
-				pressTime = Time.time; 
-//				Debug.Log("Press Time: " + pressTime); 
-
-				mousePos2D = new Vector2 (mousePos.x, mousePos.y);
-
-				RaycastHit2D hit = Physics2D.Raycast (mousePos2D, Vector2.zero, 0f);
-
-				if (hit)
-				{
-					if (hit.transform.gameObject.Equals (gameObject))
+					#region Select All
+					//when double tapped, all civilians are selected
+					if (Time.time - pressTime <= pressTimeLimit)
 					{
-//						Debug.Log("HIT");
-						isSelected = !isSelected;
-						if (isSelected)
+		//				Debug.Log("Time: " + Time.time);
+		//				Debug.Log("Time Difference: " + (Time.time - pressTime));
+						isSelected = true;
+						//when a civilian is selected, check if it is in the selectedCivs list before adding it
+						if (!unitHandling.selectedCivs.Contains(gameObject))
 						{
+							unitHandling.selectedCivs.Add(gameObject);
+						}
+		//				Debug.Log("isSelected: " + isSelected.ToString());
+						pressTime = Time.time;
+
+						noMarquee = true;
+		//				Debug.Log("all");
+					}
+					#endregion
+					#region Select One
+					else
+					{
+						//when the button is pressed while mouse is hovering over the civilian, it is selected
+						//when pressed while mouse is not hovering over any civilian, the civilian is deselected
+						pressTime = Time.time; 
+		//				Debug.Log("Press Time: " + pressTime); 
+
+						mousePos2D = new Vector2 (mousePos.x, mousePos.y);
+
+						RaycastHit2D hit = Physics2D.Raycast (mousePos2D, Vector2.zero, 0f);
+
+						if (hit)
+						{
+							if (hit.transform.gameObject.Equals (gameObject))
+							{
+		//						Debug.Log("HIT");
+								isSelected = !isSelected;
+								if (isSelected)
+								{
+									//when a civilian is selected, check if it is in the selectedCivs list before adding it
+									if (!unitHandling.selectedCivs.Contains(gameObject))
+									{
+										unitHandling.selectedCivs.Add(gameObject);
+									}
+
+								}
+								else
+								{
+									//when a civilian is deselected, check if it is in the selectedCivs list before removing it
+									if (unitHandling.selectedCivs.Contains(gameObject))
+									{
+										unitHandling.selectedCivs.Remove(gameObject);
+									}
+								}
+							}
+							else if (!hit.transform.gameObject.CompareTag ("Civilian"))
+							{
+								isSelected = false;
+								//when a civilian is deselected, check if it is in the selectedCivs list before removing it
+								if (unitHandling.selectedCivs.Contains(gameObject))
+								{
+									unitHandling.selectedCivs.Remove(gameObject);
+								}
+							}
+
+							//prevent selection box from being used if single select happened
+							noMarquee = true;
+						}
+						else
+						{
+							isSelected = false;
+							//when a civilian is deselected, check if it is in the selectedCivs list before removing it
+							if (unitHandling.selectedCivs.Contains(gameObject))
+							{
+								unitHandling.selectedCivs.Remove(gameObject);
+							}
+							noMarquee = false;
+						}
+
+		//				Debug.Log("one");
+					}
+					#endregion
+					//capture the mouse position in screen space when the button was first pressed
+					initMousePos = Camera.main.WorldToScreenPoint(mousePos);
+				}
+			}
+		}
+			
+		if(Input.GetButton("Select"))
+		{
+			if (pauseMenu == null || !pauseMenu.Paused())
+			{
+				if (gameMaster.activeCivs.Contains(gameObject))
+				{
+					if (noMarquee == false)
+					{
+						#region Selection Box
+						//when held down and the mouse is dragged, creates a selection box that selects all civilians within
+						boxSelect = new Rect(Mathf.Min(initMousePos.x, Camera.main.WorldToScreenPoint(mousePos).x), 
+							Mathf.Min(initMousePos.y, Camera.main.WorldToScreenPoint(mousePos).y), 
+							Mathf.Abs(initMousePos.x - Camera.main.WorldToScreenPoint(mousePos).x), 
+							Mathf.Abs(initMousePos.y - Camera.main.WorldToScreenPoint(mousePos).y));
+
+						if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
+						{
+							isSelected = true;
 							//when a civilian is selected, check if it is in the selectedCivs list before adding it
 							if (!unitHandling.selectedCivs.Contains(gameObject))
 							{
 								unitHandling.selectedCivs.Add(gameObject);
 							}
-
 						}
 						else
 						{
+		//					Debug.Log("OUTSIDE");
+							isSelected = false;
 							//when a civilian is deselected, check if it is in the selectedCivs list before removing it
 							if (unitHandling.selectedCivs.Contains(gameObject))
 							{
 								unitHandling.selectedCivs.Remove(gameObject);
 							}
 						}
-					}
-					else if (!hit.transform.gameObject.CompareTag ("Civilian"))
-					{
-						isSelected = false;
-						//when a civilian is deselected, check if it is in the selectedCivs list before removing it
-						if (unitHandling.selectedCivs.Contains(gameObject))
-						{
-							unitHandling.selectedCivs.Remove(gameObject);
-						}
-					}
+						#endregion
 
-					//prevent selection box from being used if single select happened
-					noMarquee = true;
-				}
-				else
-				{
-					isSelected = false;
-					//when a civilian is deselected, check if it is in the selectedCivs list before removing it
-					if (unitHandling.selectedCivs.Contains(gameObject))
-					{
-						unitHandling.selectedCivs.Remove(gameObject);
-					}
-					noMarquee = false;
-				}
-
-//				Debug.Log("one");
-			}
-			#endregion
-			//capture the mouse position in screen space when the button was first pressed
-			initMousePos = Camera.main.WorldToScreenPoint(mousePos);
-
-		}
-			
-		if(Input.GetButton("Select") && !pauseMenu.Paused())
-		{
-			if (noMarquee == false)
-			{
-				#region Selection Box
-				//when held down and the mouse is dragged, creates a selection box that selects all civilians within
-				boxSelect = new Rect(Mathf.Min(initMousePos.x, Camera.main.WorldToScreenPoint(mousePos).x), 
-					Mathf.Min(initMousePos.y, Camera.main.WorldToScreenPoint(mousePos).y), 
-					Mathf.Abs(initMousePos.x - Camera.main.WorldToScreenPoint(mousePos).x), 
-					Mathf.Abs(initMousePos.y - Camera.main.WorldToScreenPoint(mousePos).y));
-
-				if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
-				{
-					isSelected = true;
-					//when a civilian is selected, check if it is in the selectedCivs list before adding it
-					if (!unitHandling.selectedCivs.Contains(gameObject))
-					{
-						unitHandling.selectedCivs.Add(gameObject);
+		//				Debug.Log("box");
+						isSelectPressed = true;
 					}
 				}
-				else
-				{
-//					Debug.Log("OUTSIDE");
-					isSelected = false;
-					//when a civilian is deselected, check if it is in the selectedCivs list before removing it
-					if (unitHandling.selectedCivs.Contains(gameObject))
-					{
-						unitHandling.selectedCivs.Remove(gameObject);
-					}
-				}
-				#endregion
-
-//				Debug.Log("box");
-				isSelectPressed = true;
 			}
 		}
 		else
@@ -363,6 +386,10 @@ public class eCivilianController : MonoBehaviour {
 				Dying = false;
 			}
 		}
+		else
+		{
+			dyingTimer = dyingTimeLimit;
+		}
 		#endregion
 
 		#region Dead
@@ -372,6 +399,12 @@ public class eCivilianController : MonoBehaviour {
 			if (unitHandling.selectedCivs.Contains(gameObject))
 			{
 				unitHandling.selectedCivs.Remove(gameObject);
+			}
+
+			if (gameMaster.activeCivs.Contains(gameObject) && gameMaster.liveCivs.Contains(gameObject))
+			{
+				gameMaster.activeCivs.Remove(gameObject);
+				gameMaster.liveCivs.Remove(gameObject);
 			}
 
 			//Dead is dead
@@ -453,24 +486,32 @@ public class eCivilianController : MonoBehaviour {
 	public void TakeDmg(int amt)
 	{
 		//take damage if...
-		if (!Dying && !Dead && !pauseMenu.Paused())
+		if (!Dying && !Dead)
 		{
 			//...not in the state of dying or dead
-			if (invincibleTimerOn == false)
+			if (pauseMenu == null || !pauseMenu.Paused())
 			{
-				//...and not invincible
-				health -= amt;
-				healthBar.value = health;
+				//...the pause menu doesn't exist or the game is not paused
+				if (gameMaster.activeCivs.Contains(gameObject))
+				{
+					//...it is active
+					if (invincibleTimerOn == false)
+					{
+						//...and not invincible
+						health -= amt;
+						healthBar.value = health;
 
-				//enter Dying state if no more health, otherwise enter damaged state and become invincible
-				if (health <= 0)
-				{
-					StartDying ();
-				}
-				else
-				{
-					invincibleTimerOn = true;
-					damaged = true;
+						//enter Dying state if no more health, otherwise enter damaged state and become invincible
+						if (health <= 0)
+						{
+							StartDying ();
+						}
+						else
+						{
+							invincibleTimerOn = true;
+							damaged = true;
+						}
+					}
 				}
 			}
 		}
@@ -487,10 +528,19 @@ public class eCivilianController : MonoBehaviour {
 	}
 	#endregion
 
-	#region Dying Function
+	#region Start Dying Function
 	void StartDying()
 	{
 		Dying = true;
+	}
+	#endregion
+
+	#region Stop Dying Function
+	public void StopDying()
+	{
+		Dying = false;
+		health = maxHealth;
+		healthBar.value = health;
 	}
 	#endregion
 
