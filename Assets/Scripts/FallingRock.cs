@@ -10,7 +10,7 @@ public class FallingRock : MonoBehaviour
 		{
 			Instantiate (RockParticles, this.transform.position, this.transform.rotation);
 			GameObject cam = GameObject.FindGameObjectWithTag ("MainCamera") as GameObject;
-//			iTweenEvent.GetEvent (cam, "ScreenPunch").Play ();
+			iTweenEvent.GetEvent (cam, "ScreenPunch").Play ();
 		}
 		if (col.gameObject.tag == "Civilian")
 		{
