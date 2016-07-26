@@ -12,7 +12,7 @@ public class eCivilianController : MonoBehaviour {
 	public float walkSpeed = 3f;								//how fast the civilian should move
 //	public Vector2 clickPos;									//the position of the mouse when the button was clicked
 	[HideInInspector] public Vector2 destPos;					//the destination as determined by CivRTSUnitHandling
-	public bool isDeployPressed = false;						//prevent holding the button from doing anything
+//	public bool isDeployPressed = false;						//prevent holding the button from doing anything
 //	public bool isDeployed = false;								//whether or not a marker exists
 	public bool stop = false;									//whether or not the civilian moves
 //	public GameObject marker;									//reference the marker prefab
