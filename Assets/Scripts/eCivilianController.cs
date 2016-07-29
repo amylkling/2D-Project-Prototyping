@@ -37,6 +37,7 @@ public class eCivilianController : MonoBehaviour {
 	public float dyingTimeLimit = 30f;							//the amount of time it takes for dying to turn into dead
 	public Slider healthBar;									//the UI bar that shows the civilian's health
 	public bool damaged = false;
+	public Slider dyingTimerUI;									//the UI that displays the time left until the civilian dies
 
 	[HideInInspector] public bool invincibleTimerOn = false;	//start count down on how long invincibility lasts
 	private float invincibleTimer = 0f;							//countdown for how long invincibility lasts
@@ -65,10 +66,12 @@ public class eCivilianController : MonoBehaviour {
 		pressTime = Time.time;
 		//initialize health
 		health = maxHealth;
-		dyingTimer = dyingTimeLimit;
-		invincibleTimer = invincibleTimeLimit;
 		healthBar.value = health;
 		healthBar.maxValue = maxHealth;
+		dyingTimer = dyingTimeLimit;
+		invincibleTimer = invincibleTimeLimit;
+		dyingTimerUI.maxValue = dyingTimeLimit;
+		dyingTimerUI.value = dyingTimeLimit;
 		//instantiate the list for collisions with other civs
 		otherCivs = new List<Collision2D>();
 		//initialize pause script if running from main menu
@@ -379,16 +382,19 @@ public class eCivilianController : MonoBehaviour {
 			//start a timer for how long to remain in the Dying state before switching to Death state
 			Debug.Log(gameObject.name + ": I'm dying!!");
 			dyingTimer -= Time.deltaTime;
+			dyingTimerUI.value = dyingTimer;
 			if (dyingTimer <= 0)
 			{
 				Death();
 				dyingTimer = dyingTimeLimit;
+				dyingTimerUI.value = dyingTimeLimit;
 				Dying = false;
 			}
 		}
 		else
 		{
 			dyingTimer = dyingTimeLimit;
+			dyingTimerUI.value = dyingTimeLimit;
 		}
 		#endregion
 
