@@ -547,6 +547,7 @@ public class eCivilianController : MonoBehaviour {
 		Dying = false;
 		health = maxHealth;
 		healthBar.value = health;
+		invincibleTimerOn = true;
 	}
 	#endregion
 
