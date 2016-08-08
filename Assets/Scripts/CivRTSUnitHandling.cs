@@ -99,15 +99,34 @@ public class CivRTSUnitHandling : MonoBehaviour {
 				markerPos = new Vector3(mousePos2D.x, hit.transform.position.y + distToGround, 0); 
 				destination = new Vector2(markerPos.x, markerPos.y);
 
+				MovingPlatformController movPlatScript = hit.transform.gameObject.GetComponent<MovingPlatformController>();
+				GameObject newMarker;
+
 				//place a marker if there isn't one already or replace the current one
 				if (mars.Length == 0)
 				{
-					Instantiate(marker, markerPos, Quaternion.identity);
+					if (movPlatScript != null)
+					{
+						newMarker = (GameObject)Instantiate(marker, markerPos, Quaternion.identity);
+						newMarker.transform.SetParent(hit.transform);
+					}
+					else
+					{
+						Instantiate(marker, markerPos, Quaternion.identity);
+					}
 				}
 				else if (mars.Length == 1)
 				{
 					Destroy(GameObject.FindGameObjectWithTag("Marker"));
-					Instantiate(marker, markerPos, Quaternion.identity);
+					if (movPlatScript != null)
+					{
+						newMarker = (GameObject)Instantiate(marker, markerPos, Quaternion.identity);
+						newMarker.transform.SetParent(hit.transform);
+					}
+					else
+					{
+						Instantiate(marker, markerPos, Quaternion.identity);
+					}
 				}
 
 				return true;

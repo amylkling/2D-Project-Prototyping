@@ -22,28 +22,28 @@ public class ePickupController : MonoBehaviour {
 
 	void Update()
 	{
-		if (timerOn)
-		{
-			timer -= Time.deltaTime;
-			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,5));
-			if (timer <= 0)
-			{
-				timer = moveTimer;
-				timerOn = false;
-				timerOff = true;
-			}
-		}
-
-		if (timerOff)
-		{
-			timer2 -= Time.deltaTime;
-			if (timer2 <= 0)
-			{
-				timer2 = dontMoveTimer;
-				timerOff = false;
-				timerOn = true;
-			}
-		}
+//		if (timerOn)
+//		{
+//			timer -= Time.deltaTime;
+//			gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0,5));
+//			if (timer <= 0)
+//			{
+//				timer = moveTimer;
+//				timerOn = false;
+//				timerOff = true;
+//			}
+//		}
+//
+//		if (timerOff)
+//		{
+//			timer2 -= Time.deltaTime;
+//			if (timer2 <= 0)
+//			{
+//				timer2 = dontMoveTimer;
+//				timerOff = false;
+//				timerOn = true;
+//			}
+//		}
 	}
 
 	void OnTriggerEnter2D(Collider2D col)
