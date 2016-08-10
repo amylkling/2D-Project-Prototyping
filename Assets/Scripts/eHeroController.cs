@@ -7,8 +7,7 @@ public class eHeroController : MonoBehaviour
 	#region Variables
 	private Rigidbody2D rgdBody2D;							//character's Rigidbody2D - necessary for physics
 	private bool facingRight = true;						//keep track of which way the character is facing
-
-	float horiz = 0f;										//holder for horizontal axis input
+	float horiz = 0f;										//horizontal relative position, determines facing direction
 
 	public bool mouseInput = true;							//whether or not to use mouse input
 	private Vector2 inpt = new Vector2(0,0);				//holder for 2D mouse input vector
@@ -133,10 +132,6 @@ public class eHeroController : MonoBehaviour
 		}
 		#endregion
 
-		//get the input values for both axes
-		horiz = Input.GetAxis ("Horizontal");
-
-
 		#region Mouse Input Key
 		//only allow player movement when "Fire1" key is held down
 		if (Input.GetAxis("Fire1") != 0)
@@ -155,6 +150,9 @@ public class eHeroController : MonoBehaviour
 		//convert mouse position to world space
 		mousePos = Camera.main.ScreenToWorldPoint(mousePosRaw);
 		inpt = new Vector2 (mousePos.x, mousePos.y);
+
+		//compare mouse input to hero's position to determine facing direction
+		horiz = mousePos.x - transform.position.x;
 		#endregion
 
 		#region Dash Calculations

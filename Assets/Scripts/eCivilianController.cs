@@ -12,7 +12,7 @@ public class eCivilianController : MonoBehaviour {
 	public float walkSpeed = 3f;								//how fast the civilian should move
 //	public Vector2 clickPos;									//the position of the mouse when the button was clicked
 	[HideInInspector] public Vector2 destPos;					//the destination as determined by CivRTSUnitHandling
-	public bool isDeployPressed = false;						//prevent holding the button from doing anything
+//	public bool isDeployPressed = false;						//prevent holding the button from doing anything
 //	public bool isDeployed = false;								//whether or not a marker exists
 	public bool stop = false;									//whether or not the civilian moves
 //	public GameObject marker;									//reference the marker prefab
@@ -37,6 +37,7 @@ public class eCivilianController : MonoBehaviour {
 	public float dyingTimeLimit = 30f;							//the amount of time it takes for dying to turn into dead
 	public Slider healthBar;									//the UI bar that shows the civilian's health
 	public bool damaged = false;
+	public Slider dyingTimerUI;									//the UI that displays the time left until the civilian dies
 
 	[HideInInspector] public bool invincibleTimerOn = false;	//start count down on how long invincibility lasts
 	private float invincibleTimer = 0f;							//countdown for how long invincibility lasts
@@ -65,10 +66,12 @@ public class eCivilianController : MonoBehaviour {
 		pressTime = Time.time;
 		//initialize health
 		health = maxHealth;
-		dyingTimer = dyingTimeLimit;
-		invincibleTimer = invincibleTimeLimit;
 		healthBar.value = health;
 		healthBar.maxValue = maxHealth;
+		dyingTimer = dyingTimeLimit;
+		invincibleTimer = invincibleTimeLimit;
+		dyingTimerUI.maxValue = dyingTimeLimit;
+		dyingTimerUI.value = dyingTimeLimit;
 		//instantiate the list for collisions with other civs
 		otherCivs = new List<Collision2D>();
 		//initialize pause script if running from main menu
@@ -379,16 +382,19 @@ public class eCivilianController : MonoBehaviour {
 			//start a timer for how long to remain in the Dying state before switching to Death state
 			Debug.Log(gameObject.name + ": I'm dying!!");
 			dyingTimer -= Time.deltaTime;
+			dyingTimerUI.value = dyingTimer;
 			if (dyingTimer <= 0)
 			{
 				Death();
 				dyingTimer = dyingTimeLimit;
+				dyingTimerUI.value = dyingTimeLimit;
 				Dying = false;
 			}
 		}
 		else
 		{
 			dyingTimer = dyingTimeLimit;
+			dyingTimerUI.value = dyingTimeLimit;
 		}
 		#endregion
 
@@ -541,6 +547,7 @@ public class eCivilianController : MonoBehaviour {
 		Dying = false;
 		health = maxHealth;
 		healthBar.value = health;
+		invincibleTimerOn = true;
 	}
 	#endregion
 
@@ -574,7 +581,7 @@ public class eCivilianController : MonoBehaviour {
 	#region On Collision Stay Function
 	void OnCollisionStay2D(Collision2D col)
 	{
-		//after turning on collision again, if the clliders are still touching, 
+		//after turning on collision again, if the colliders are still touching, 
 		//separate them by a minuscule amount according to relative positioning
 		//this allows On Collision Enter to be called again without any extra input from the player
 		if (col.gameObject.CompareTag("Civilian"))
@@ -587,6 +594,23 @@ public class eCivilianController : MonoBehaviour {
 			{
 				rgdb2D.MovePosition(new Vector2(rgdb2D.position.x + .01f, rgdb2D.position.y));
 			}
+		}
+	}
+	#endregion
+
+	#region On Became Visible Function
+	void OnBecameVisible()
+	{
+		//when this civilian becomes visible to any camera, mark it as active and alive
+		//if it isn't already marked
+		if (!gameMaster.activeCivs.Contains(gameObject))
+		{
+			gameMaster.activeCivs.Add(gameObject);
+		}
+
+		if (!Dead && !gameMaster.liveCivs.Contains(gameObject))
+		{
+			gameMaster.liveCivs.Add(gameObject);
 		}
 	}
 	#endregion
