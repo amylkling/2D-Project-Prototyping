@@ -581,7 +581,7 @@ public class eCivilianController : MonoBehaviour {
 	#region On Collision Stay Function
 	void OnCollisionStay2D(Collision2D col)
 	{
-		//after turning on collision again, if the clliders are still touching, 
+		//after turning on collision again, if the colliders are still touching, 
 		//separate them by a minuscule amount according to relative positioning
 		//this allows On Collision Enter to be called again without any extra input from the player
 		if (col.gameObject.CompareTag("Civilian"))
@@ -594,6 +594,23 @@ public class eCivilianController : MonoBehaviour {
 			{
 				rgdb2D.MovePosition(new Vector2(rgdb2D.position.x + .01f, rgdb2D.position.y));
 			}
+		}
+	}
+	#endregion
+
+	#region On Became Visible Function
+	void OnBecameVisible()
+	{
+		//when this civilian becomes visible to any camera, mark it as active and alive
+		//if it isn't already marked
+		if (!gameMaster.activeCivs.Contains(gameObject))
+		{
+			gameMaster.activeCivs.Add(gameObject);
+		}
+
+		if (!Dead && !gameMaster.liveCivs.Contains(gameObject))
+		{
+			gameMaster.liveCivs.Add(gameObject);
 		}
 	}
 	#endregion

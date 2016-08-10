@@ -27,14 +27,9 @@ public class GameController : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D col)
 	{
+		//if a civilian is detected that is dying, and the player has a pickup, revive that civilian
 		if (col.gameObject.CompareTag("Civilian"))
 		{
-			if (!activeCivs.Contains(col.gameObject) && !liveCivs.Contains(col.gameObject))
-			{
-				activeCivs.Add(col.gameObject);
-				liveCivs.Add(col.gameObject);
-			}
-
 			if (col.gameObject.GetComponent<eCivilianController>().Dying && hasPickup)
 			{
 				col.gameObject.GetComponent<eCivilianController>().StopDying();
