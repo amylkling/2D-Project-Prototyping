@@ -21,6 +21,7 @@ public class CivRTSUnitHandling : MonoBehaviour {
 
 	[HideInInspector] public Pause pauseMenu;				//reference game pausing script
 
+
 	void Start()
 	{
 		//initialize player script reference and variable from it
@@ -36,7 +37,6 @@ public class CivRTSUnitHandling : MonoBehaviour {
 		{
 			pauseMenu = GameObject.Find("UI").GetComponent<Pause>();
 		}
-
 	}
 
 
