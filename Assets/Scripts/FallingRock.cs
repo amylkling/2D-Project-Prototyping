@@ -8,6 +8,7 @@ public class FallingRock : MonoBehaviour
 
 	void Update()
 	{
+		//send a raycast from the bottom of the rock downward
 		RaycastHit2D hit = Physics2D.Raycast(new Vector2(gameObject.transform.position.x, 
 			gameObject.transform.position.y - gameObject.GetComponent<CircleCollider2D>().radius), Vector2.down);
 
@@ -16,6 +17,7 @@ public class FallingRock : MonoBehaviour
 
 		if (hit.collider.gameObject.CompareTag("Civilian"))
 		{
+			//if the raycast finds a civ that is invincible or dying, don't hit it
 			Debug.Log("look out below!");
 			if (hit.collider.gameObject.GetComponent<eCivilianController>().invincibleTimerOn ||
 				hit.collider.gameObject.GetComponent<eCivilianController>().Dying)

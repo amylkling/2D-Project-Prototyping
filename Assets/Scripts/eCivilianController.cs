@@ -42,6 +42,9 @@ public class eCivilianController : MonoBehaviour {
 	[HideInInspector] public bool invincibleTimerOn = false;	//start count down on how long invincibility lasts
 	private float invincibleTimer = 0f;							//countdown for how long invincibility lasts
 	public float invincibleTimeLimit = 5f;						//how long invincibility should last
+	public float knockbackTimeLimit = 1f;						//how long the knockback animation lasts
+	private float knockbackTimer = 0f;							//countdown for knockback animation to play fully
+	private bool knockback = false;								//whether or not the knockback needs to play
 
 	private bool facingRight = true;							//keep track of which way the character is facing
 	public CivRTSUnitHandling unitHandling;						//reference the civilian RTS unit-style handling script
@@ -64,10 +67,7 @@ public class eCivilianController : MonoBehaviour {
 		//clickPos = rgdb2D.position;
 		destPos = rgdb2D.position;
 		pressTime = Time.time;
-		//initialize health
-		health = maxHealth;
-		healthBar.value = health;
-		healthBar.maxValue = maxHealth;
+		knockbackTimer = knockbackTimeLimit;
 		dyingTimer = dyingTimeLimit;
 		invincibleTimer = invincibleTimeLimit;
 		dyingTimerUI.maxValue = dyingTimeLimit;
@@ -83,6 +83,14 @@ public class eCivilianController : MonoBehaviour {
 		gameMaster = GameObject.Find("Overseer").GetComponent<GameController>();
 	}
 	#endregion
+
+	void Start()
+	{
+		//initialize health
+		health = maxHealth;
+		healthBar.value = health;
+		healthBar.maxValue = maxHealth;
+	}
 
 	#region Update Function
 	// Update is called once per frame
@@ -236,7 +244,7 @@ public class eCivilianController : MonoBehaviour {
 		//				Debug.Log("Time Difference: " + (Time.time - pressTime));
 						isSelected = true;
 						//when a civilian is selected, check if it is in the selectedCivs list before adding it
-						if (!unitHandling.selectedCivs.Contains(gameObject))
+						if (!unitHandling.selectedCivs.Contains(gameObject) && gameMaster.activeCivs.Contains(gameObject))
 						{
 							unitHandling.selectedCivs.Add(gameObject);
 						}
@@ -320,8 +328,7 @@ public class eCivilianController : MonoBehaviour {
 		{
 			if (pauseMenu == null || !pauseMenu.Paused())
 			{
-				if (gameMaster.activeCivs.Contains(gameObject))
-				{
+				
 					if (noMarquee == false)
 					{
 						#region Selection Box
@@ -331,7 +338,8 @@ public class eCivilianController : MonoBehaviour {
 							Mathf.Abs(initMousePos.x - Camera.main.WorldToScreenPoint(mousePos).x), 
 							Mathf.Abs(initMousePos.y - Camera.main.WorldToScreenPoint(mousePos).y));
 
-						if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)))
+					if (boxSelect.Contains(Camera.main.WorldToScreenPoint(transform.position)) 
+						&& gameMaster.activeCivs.Contains(gameObject))
 						{
 							isSelected = true;
 							//when a civilian is selected, check if it is in the selectedCivs list before adding it
@@ -355,7 +363,7 @@ public class eCivilianController : MonoBehaviour {
 		//				Debug.Log("box");
 						isSelectPressed = true;
 					}
-				}
+
 			}
 		}
 		else
@@ -425,12 +433,24 @@ public class eCivilianController : MonoBehaviour {
 			//when it runs out, allow civ to move and get damaged again
 			healthBar.gameObject.GetComponentInChildren<Image>().color = Color.white;
 			invincibleTimer -= Time.deltaTime;
+			//allow time for a knockback animation, during which they can't move towards their destination
+			if (knockback)
+			{
+				knockbackTimer -= Time.deltaTime;
+				if (knockbackTimer <= 0)
+				{
+					knockback = false;
+					knockbackTimer = knockbackTimeLimit;
+					stop = false;
+					damaged = false;
+				}
+			}
+
 			if (invincibleTimer <= 0)
 			{
 				invincibleTimer = invincibleTimeLimit;
 				invincibleTimerOn = false;
-				damaged = false;
-				stop = false;
+
 			}
 		}
 		#endregion
@@ -515,6 +535,7 @@ public class eCivilianController : MonoBehaviour {
 						else
 						{
 							invincibleTimerOn = true;
+							knockback = true;
 							damaged = true;
 						}
 					}

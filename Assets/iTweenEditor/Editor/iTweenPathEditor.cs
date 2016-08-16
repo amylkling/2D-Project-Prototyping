@@ -10,6 +10,7 @@ public class iTweenPathEditor : Editor
 	iTweenPath _target;
 	GUIStyle style = new GUIStyle();
 	public static int count = 0;
+	Vector3 newNodeOffset = new Vector3(5, 5, 5);
 	
 	void OnEnable(){
 		//i like bold handle labels since I'm getting old:
@@ -51,7 +52,9 @@ public class iTweenPathEditor : Editor
 		//add node?
 		if(_target.nodeCount > _target.nodes.Count){
 			for (int i = 0; i < _target.nodeCount - _target.nodes.Count; i++) {
-				_target.nodes.Add(Vector3.zero);	
+				var pos = _target.nodes[_target.nodes.Count - 1];
+				pos += newNodeOffset;                
+				_target.nodes.Add(pos);
 			}
 		}
 	
@@ -84,12 +87,13 @@ public class iTweenPathEditor : Editor
 				Undo.SetSnapshotTarget(_target,"Adjust iTween Path");
 				
 				//path begin and end labels:
-				Handles.Label(_target.nodes[0], "'" + _target.pathName + "' Begin", style);
-				Handles.Label(_target.nodes[_target.nodes.Count-1], "'" + _target.pathName + "' End", style);
+				Handles.Label(_target.transform.TransformPoint(_target.nodes[0]), "'" + _target.pathName + "' Begin", style);
+				Handles.Label(_target.transform.TransformPoint(_target.nodes[_target.nodes.Count - 1]), "'" + _target.pathName + "' End", style);
 				
 				//node handle display:
 				for (int i = 0; i < _target.nodes.Count; i++) {
-					_target.nodes[i] = Handles.PositionHandle(_target.nodes[i], Quaternion.identity);
+					_target.nodes[i] = _target.transform.InverseTransformPoint(
+						Handles.PositionHandle(_target.transform.TransformPoint(_target.nodes[i]), Quaternion.identity));
 				}	
 			}
 		} // dkoontz
